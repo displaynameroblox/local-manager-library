@@ -5,6 +5,282 @@
 
 local manager = {}
 
+local function nodefecth()
+    -- nodefecth but for this library, funny i know right?
+    print("╭─────────────────────────────────────────────────────────────╮")
+    print("│                    Local Manager Library                    │")
+    print("│                      System Information                     │")
+    print("╰─────────────────────────────────────────────────────────────╯")
+    print()
+    
+    local systemInfo = {}
+    
+    -- Test 1: Executor Detection
+    print("🔍 Testing Executor...")
+    local executorSuccess, executorName, executorVersion = pcall(function()
+        return identifyexecutor()
+    end)
+    
+    if executorSuccess and executorName then
+        systemInfo.executor = {
+            name = executorName,
+            version = executorVersion or "Unknown",
+            available = true
+        }
+        print("✅ Executor: " .. executorName .. " v" .. (executorVersion or "Unknown"))
+    else
+        systemInfo.executor = {
+            name = "Unknown",
+            version = "Unknown", 
+            available = false
+        }
+        print("❌ Executor: Not detected or not available")
+    end
+    print()
+    
+    -- Test 2: Game Environment
+    print("🎮 Testing Game Environment...")
+    local gameSuccess = pcall(function()
+        return game ~= nil
+    end)
+    
+    if gameSuccess and game then
+        systemInfo.game = {
+            available = true,
+            placeId = game.PlaceId or "Unknown",
+            gameId = game.GameId or "Unknown"
+        }
+        print("✅ Game Environment: Available")
+        print("   Place ID: " .. (game.PlaceId or "Unknown"))
+        print("   Game ID: " .. (game.GameId or "Unknown"))
+    else
+        systemInfo.game = {
+            available = false,
+            placeId = "N/A",
+            gameId = "N/A"
+        }
+        print("❌ Game Environment: Not available")
+    end
+    print()
+    
+    -- Test 3: Filesystem Operations
+    print("📁 Testing Filesystem...")
+    local fsTests = {
+        {name = "listfiles", func = function() listfiles(".") end},
+        {name = "isfile", func = function() return isfile("test.txt") end},
+        {name = "isfolder", func = function() return isfolder("test") end},
+        {name = "readfile", func = function() 
+            local success = pcall(function() readfile("nonexistent.txt") end)
+            return success -- This should fail, but the function exists
+        end},
+        {name = "writefile", func = function()
+            writefile("nodefecth_test.txt", "test")
+            return true
+        end}
+    }
+    
+    systemInfo.filesystem = {}
+    for _, test in ipairs(fsTests) do
+        local success = pcall(test.func)
+        systemInfo.filesystem[test.name] = success
+        if success then
+            print("✅ " .. test.name .. ": Available")
+        else
+            print("❌ " .. test.name .. ": Not available")
+        end
+    end
+    
+    -- Clean up test file
+    pcall(function() delfile("nodefecth_test.txt") end)
+    print()
+    
+    -- Test 4: HTTP/Network Operations
+    print("🌐 Testing HTTP/Network...")
+    local httpTests = {
+        {name = "request", func = function() 
+            request({Url = "https://httpbin.org/get", Method = "GET"})
+            return true
+        end},
+        {name = "game:HttpGet", func = function()
+            if game and game.HttpGet then
+                game:HttpGet("https://httpbin.org/get")
+                return true
+            end
+            return false
+        end}
+    }
+    
+    systemInfo.http = {}
+    for _, test in ipairs(httpTests) do
+        local success = pcall(test.func)
+        systemInfo.http[test.name] = success
+        if success then
+            print("✅ " .. test.name .. ": Available")
+        else
+            print("❌ " .. test.name .. ": Not available")
+        end
+    end
+    print()
+    
+    -- Test 5: GUI/Drawing Operations
+    print("🎨 Testing GUI/Drawing...")
+    local guiTests = {
+        {name = "Drawing.new", func = function()
+            local circle = Drawing.new("Circle")
+            circle:Destroy()
+            return true
+        end},
+        {name = "Instance.new", func = function()
+            local frame = Instance.new("Frame")
+            frame:Destroy()
+            return true
+        end},
+        {name = "ScreenGui Creation", func = function()
+            if game and game.Players and game.Players.LocalPlayer then
+                local screenGui = Instance.new("ScreenGui")
+                screenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+                screenGui:Destroy()
+                return true
+            end
+            return false
+        end}
+    }
+    
+    systemInfo.gui = {}
+    for _, test in ipairs(guiTests) do
+        local success = pcall(test.func)
+        systemInfo.gui[test.name] = success
+        if success then
+            print("✅ " .. test.name .. ": Available")
+        else
+            print("❌ " .. test.name .. ": Not available")
+        end
+    end
+    print()
+    
+    -- Test 6: Advanced Executor Features
+    print("⚡ Testing Advanced Features...")
+    local advancedTests = {
+        {name = "hookfunction", func = function()
+            hookfunction(print, function() end)
+            return true
+        end},
+        {name = "getgenv", func = function()
+            getgenv()
+            return true
+        end},
+        {name = "getrenv", func = function()
+            getrenv()
+            return true
+        end},
+        {name = "loadstring", func = function()
+            loadstring("return true")()
+            return true
+        end}
+    }
+    
+    systemInfo.advanced = {}
+    for _, test in ipairs(advancedTests) do
+        local success = pcall(test.func)
+        systemInfo.advanced[test.name] = success
+        if success then
+            print("✅ " .. test.name .. ": Available")
+        else
+            print("❌ " .. test.name .. ": Not available")
+        end
+    end
+    print()
+    
+    -- Test 7: Memory and Performance
+    print("🧠 Testing Memory/Performance...")
+    local memorySuccess, gc = pcall(function() return getgc() end)
+    local regSuccess, reg = pcall(function() return getreg() end)
+    
+    systemInfo.memory = {
+        getgc = memorySuccess,
+        getreg = regSuccess,
+        gcCount = memorySuccess and #gc or 0,
+        regCount = regSuccess and #reg or 0
+    }
+    
+    if memorySuccess then
+        print("✅ getgc: Available (" .. #gc .. " objects)")
+    else
+        print("❌ getgc: Not available")
+    end
+    
+    if regSuccess then
+        print("✅ getreg: Available (" .. #reg .. " objects)")
+    else
+        print("❌ getreg: Not available")
+    end
+    print()
+    
+    -- Display System Summary
+    print("╭─────────────────────────────────────────────────────────────╮")
+    print("│                        System Summary                       │")
+    print("╰─────────────────────────────────────────────────────────────╯")
+    
+    local totalTests = 0
+    local passedTests = 0
+    
+    -- Count tests and results
+    for category, tests in pairs(systemInfo) do
+        if type(tests) == "table" then
+            for testName, result in pairs(tests) do
+                if type(result) == "boolean" then
+                    totalTests = totalTests + 1
+                    if result then
+                        passedTests = passedTests + 1
+                    end
+                end
+            end
+        end
+    end
+    
+    local successRate = totalTests > 0 and math.floor((passedTests / totalTests) * 100) or 0
+    
+    print("📊 Overall System Status:")
+    print("   Tests Passed: " .. passedTests .. "/" .. totalTests)
+    print("   Success Rate: " .. successRate .. "%")
+    print()
+    
+    if systemInfo.executor.available then
+        print("🚀 Executor: " .. systemInfo.executor.name .. " v" .. systemInfo.executor.version)
+    else
+        print("🚀 Executor: Unknown/Not Available")
+    end
+    
+    if systemInfo.game.available then
+        print("🎮 Game: Available (Place: " .. systemInfo.game.placeId .. ")")
+    else
+        print("🎮 Game: Not Available")
+    end
+    
+    print("📁 Filesystem: " .. (systemInfo.filesystem.listfiles and "✅" or "❌") .. " Core Functions")
+    print("🌐 HTTP: " .. (systemInfo.http.request and "✅" or "❌") .. " Network Access")
+    print("🎨 GUI: " .. (systemInfo.gui["Drawing.new"] and "✅" or "❌") .. " Drawing Support")
+    print("⚡ Advanced: " .. (systemInfo.advanced.hookfunction and "✅" or "❌") .. " Hooking")
+    
+    print()
+    print("╭─────────────────────────────────────────────────────────────╮")
+    print("│                    Local Manager Library                    │")
+    print("│                      System Information                     │")
+    print("│                        End of Report                       │")
+    print("╰─────────────────────────────────────────────────────────────╯")
+    
+    return systemInfo
+end
+
+-- Make nodefecth accessible through manager
+function manager.nodefecth()
+    return nodefecth()
+end
+
+-- Auto-run nodefecth when library loads
+print("🔧 Local Manager Library - Running system diagnostics...")
+nodefecth()
+
 function manager.new(path, data)
     if not path then
         return "cannot create file, did you forget to add path?"
