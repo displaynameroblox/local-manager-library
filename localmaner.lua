@@ -1209,4 +1209,14 @@ function manager.createSampleHtmlGui()
     return manager._htmlToGuiInternal(sampleHtml)
 end
 
+function saveas(path, content)
+    -- here yoy can save anything in a game!
+    -- error handling
+    if not path or path == "" then
+        return "cannot save file, did you forget to add path?"
+    elseif not content or content == "" then
+        return "can't save file without content"
+    end
+    -- to be continued...
+end
 return manager
