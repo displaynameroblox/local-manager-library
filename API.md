@@ -281,14 +281,19 @@ end
 
 **Implementation Notes:**
 - ⚠️ EXPERIMENTAL IMPLEMENTATION
-- Sound instances are created using `Instance.new("Sound")` (executor-dependent)
 - Custom assets are created using `getcustomasset` (may not work on all executors)
+<<<<<<< HEAD
 - Files are written using `writefile` with comprehensive error handling
 - The function uses nested `pcall` blocks for robust error handling
 - Automatic cleanup on failure (removes files if instance creation fails)
 - Instance organization in scriptfolder when available
 - Case-insensitive type parameter handling
 - Content validation for each type
+=======
+- Files are written using `writecustomasset` (if available) or falls back to `writefile`
+- Future type implementations will follow the same pattern but with type-specific logic
+- Current implementation may have unexpected behavior or limitations
+>>>>>>> 46ccb3a914be97b26635daac359cd73b9d9decc9
 
 **Known Limitations:**
 1. Sound creation may fail on certain executors
