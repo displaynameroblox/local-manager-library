@@ -639,9 +639,19 @@ function manager.media(path, type, typeofmedia, isfolder, folder)
     }
 
     -- error handling
-    if not path or path == "" then
-        return "cannot handle media, did you forget to add path?"
-    elseif not type or type == "" then
+    if isfolder then
+        -- For folder operations, path is not required but folder is
+        if not folder or folder == "" then
+            return "cannot handle media folder, did you forget to add folder path?"
+        end
+    else
+        -- For single file operations, path is required
+        if not path or path == "" then
+            return "cannot handle media, did you forget to add path?"
+        end
+    end
+    
+    if not type or type == "" then
         return "cannot handle media, did you forget to add type?"
     elseif not typeofmedia or typeofmedia == "" then
         return "cannot handle media, did you forget to add typeofmedia?"
@@ -655,10 +665,6 @@ function manager.media(path, type, typeofmedia, isfolder, folder)
         -- Video handling - experimental but functional
         if isfolder then
             -- Video folder handling not supported yet
-            if not folder or folder == "" then
-                return "cannot handle media folder, did you forget to add folder path?"
-            end
-
             return "video folder playback not supported yet, use single video files"
         else
             -- Handle single video file
@@ -732,9 +738,6 @@ function manager.media(path, type, typeofmedia, isfolder, folder)
     if typeofmedia == "audio" then
         if isfolder then
             -- Handle folder of audio files
-            if not folder or folder == "" then
-                return "cannot handle media folder, did you forget to add folder path?"
-            end
 
             local folderExists = pcall(function()
                 return isfolder(folder)
@@ -894,8 +897,7 @@ function manager.html(url, islocal, path, convertToGui, parentGui)
     if not path then
         return "cannot handle html, did you forget to add path?"
     elseif not islocal and not url then
-        return
-        "i won't classify that you are a programmer, put the url and the path, and say if it local or not. dont keep it empty"
+        return "i won't classify that you are a programmer, put the url and the path, and say if it local or not. dont keep it empty"
     end
 
     local htmlContent = nil
