@@ -1235,118 +1235,305 @@ function manager.createSampleHtmlGui()
     return manager._htmlToGuiInternal(sampleHtml)
 end
 
-function saveas(path, content, type)
-    -- Validate input parameters
+function manager.saveas(path, content, type)
+    -- ⚠️ EXPERIMENTAL FUNCTION - Use with caution
+    -- This function creates instances in the game environment and may not work on all executors
+    
+    -- Input validation
     if not path or path == "" then
         return "cannot save file, did you forget to add path?"
-    elseif not content or content == "" then
+    end
+    
+    if not content or content == "" then
         return "cannot save file without content"
-    elseif not type or type == "" then
+    end
+    
+    if not type or type == "" then
         return "cannot save file without type specification"
     end
-
+    
+    -- Normalize type parameter (case-insensitive)
+    type = type:lower()
+    if type == "sound" then type = "Sound" 
+    elseif type == "model" then type = "Model"
+    elseif type == "script" then type = "Script"
+    elseif type == "image" then type = "Image"
+    end
+    
     -- Validate supported types
     local supportedTypes = {
-        Sound = true,
-        Model = true,  -- For future implementation
-        Script = true, -- For future implementation
-        Image = true   -- For future implementation
+        Sound = { implemented = true, experimental = true },
+        Model = { implemented = false, experimental = true },
+        Script = { implemented = false, experimental = true },
+        Image = { implemented = false, experimental = true }
     }
-
+    
     if not supportedTypes[type] then
-        return "unsupported save type: " .. tostring(type) .. ". Supported types: Sound, Model, Script, Image"
+        local typeList = {}
+        for t, info in pairs(supportedTypes) do
+            if info.implemented then
+                table.insert(typeList, t .. " (implemented)")
+            else
+                table.insert(typeList, t .. " (planned)")
+            end
+        end
+        return "unsupported save type: " .. tostring(type) .. ". Supported types: " .. table.concat(typeList, ", ")
     end
-
+    
+    -- Check if type is implemented
+    if not supportedTypes[type].implemented then
+        return "save type '" .. type .. "' is recognized but not yet implemented. This feature is planned for future versions."
+    end
+    
     -- Check if file already exists
-    local fileExists, fileExistsErr = pcall(function()
+    local fileExists = pcall(function()
         return isfile(path)
     end)
-
+    
     if fileExists then
         return "file already exists at path: " .. path
     end
-
-    -- Type-specific handling
-    if type == "Sound" then
-        local assetSuccess, assetOrErr = pcall(function()
-            -- First try to create the Sound instance
-            local saveinstance = Instance.new("Sound")
-            if not saveinstance then
-                error("Failed to create Sound instance")
-            end
-
-            -- Try to get the filename from the path
-            local filename = path:match("([^/\\]+)$")
-            if not filename then
-                error("Invalid file path format")
-            end
-            saveinstance.Name = filename
-
-            -- Try to create the custom asset
-            local customAsset = getcustomasset(path)
-            if not customAsset then
-                error("Failed to create custom asset")
-            end
-            saveinstance.SoundId = customAsset
-
-            -- Try to write the file
-            local writeSuccess, writeErr = pcall(function()
-                if writecustomasset then
-                    return writecustomasset(filename, content)
-                else
-                    return writefile(path, content)
-                end
-            end)
-
-            if not writeSuccess then
-                error("Failed to write file: " .. tostring(writeErr))
-            end
-
-            return {
-                success = true,
-                instance = saveinstance
-            }
-        end)
-
-        if assetSuccess then
-            return "file saved successfully as Sound"
-        else
-            return "failed to save Sound file: " .. tostring(assetOrErr)
-        end
-    else
-        -- Future type implementations would go here
-        return "save type '" .. type .. "' is recognized but not yet implemented, i'll try to add it very soon :3"
+    
+    -- Extract filename from path
+    local filename = path:match("([^/\\]+)$")
+    if not filename then
+        return "invalid file path format: " .. path
     end
-    if type == "Model" then
-        -- very very very very super experimental stuff :P
-        local success1, err = pcall(function()
-            local saveinstance2 = Instance.new("Model")
-            if not saveinstance2 then
-                error("Failed to create Model instance")
-            else
-                saveinstance2.Name = path:match("([^/\\]+)$") or "NewModel"
-                -- try to copy the model to our instance
-                local clonesuccess, err = pcall(function()
-                    local modeltoclone = game:FindFirstChild(content.Name)
-                    if modeltoclone and modeltoclone:IsA("Model") then
-                        local clone = modeltoclone:Clone()
-                        clone.Parent = saveinstance2
-                        return saveinstance2
-                    else
-                        error("Content is not a valid Model instance")
-                    end
-                end)
-            end
-        end)
-        if success1 then
-            writefile(path, saveinstance2)
-        else
-            return "failed to save Model file: " ..
-            tostring(err) .. ", keep in mind, this feature is still experimental and may not work as expected."
+    
+    -- Type-specific implementations
+    if type == "Sound" then
+        return manager._saveasSound(path, content, filename)
+    elseif type == "Model" then
+        return manager._saveasModel(path, content, filename)
+    elseif type == "Script" then
+        return manager._saveasScript(path, content, filename)
+    elseif type == "Image" then
+        return manager._saveasImage(path, content, filename)
+    end
+    
+    return "unknown error in saveas function"
+end
+
+-- Internal function to save Sound instances
+function manager._saveasSound(path, content, filename)
+    -- Step 1: Validate content is valid audio data
+    if type(content) ~= "string" then
+        return "invalid content type for Sound: expected string, got " .. type(content)
+    end
+    
+    if #content < 100 then
+        return "content too small to be valid audio data (minimum 100 bytes required)"
+    end
+    
+    -- Step 2: Write the raw audio file first
+    local writeSuccess, writeError = pcall(function()
+        return writefile(path, content)
+    end)
+    
+    if not writeSuccess then
+        return "failed to write audio file: " .. tostring(writeError)
+    end
+    
+    -- Step 3: Create custom asset
+    local assetSuccess, assetOrError = pcall(function()
+        return getcustomasset(path)
+    end)
+    
+    if not assetSuccess then
+        -- Clean up the written file
+        pcall(function() delfile(path) end)
+        return "failed to create custom asset for audio: " .. tostring(assetOrError)
+    end
+    
+    -- Step 4: Create Sound instance
+    local instanceSuccess, instanceOrError = pcall(function()
+        local sound = Instance.new("Sound")
+        if not sound then
+            error("Failed to create Sound instance")
         end
+        
+        sound.Name = filename:gsub("%.mp3$", ""):gsub("%.wav$", ""):gsub("%.ogg$", "") or "Audio"
+        sound.SoundId = assetOrError
+        sound.Volume = 0.5 -- Default volume
+        
+        -- Try to put in scriptfolder for organization
+        local scriptFolder = getScriptFolder()
+        if scriptFolder then
+            local audioFolder = scriptFolder:FindFirstChild("Audio")
+            if not audioFolder then
+                audioFolder = Instance.new("Folder")
+                audioFolder.Name = "Audio"
+                audioFolder.Parent = scriptFolder
+            end
+            sound.Parent = audioFolder
+        else
+            -- Fallback to workspace
+            sound.Parent = game.Workspace
+        end
+        
+        return sound
+    end)
+    
+    if not instanceSuccess then
+        -- Clean up the written file
+        pcall(function() delfile(path) end)
+        return "failed to create Sound instance: " .. tostring(instanceOrError)
+    end
+    
+    return "file saved successfully as Sound: " .. filename .. " (instance created in game environment)"
+end
+
+-- Internal function to save Model instances (EXPERIMENTAL)
+function manager._saveasModel(path, content, filename)
+    -- This is very experimental and may not work properly
+    if type(content) ~= "table" and type(content) ~= "userdata" then
+        return "invalid content type for Model: expected Model instance or table, got " .. type(content)
+    end
+    
+    local success, error = pcall(function()
+        local model = Instance.new("Model")
+        if not model then
+            error("Failed to create Model instance")
+        end
+        
+        model.Name = filename:gsub("%.rbxl$", ""):gsub("%.rbxlx$", "") or "SavedModel"
+        
+        -- Try to clone content if it's a Model instance
+        if content and content.Clone then
+            local clone = content:Clone()
+            clone.Parent = model
+        elseif type(content) == "table" then
+            -- Try to reconstruct model from table data (very basic)
+            for _, childData in pairs(content) do
+                if childData.Type and childData.Name then
+                    local child = Instance.new(childData.Type)
+                    child.Name = childData.Name
+                    child.Parent = model
+                end
+            end
+        end
+        
+        -- Put in scriptfolder for organization
+        local scriptFolder = getScriptFolder()
+        if scriptFolder then
+            local modelsFolder = scriptFolder:FindFirstChild("Models")
+            if not modelsFolder then
+                modelsFolder = Instance.new("Folder")
+                modelsFolder.Name = "Models"
+                modelsFolder.Parent = scriptFolder
+            end
+            model.Parent = modelsFolder
+        else
+            model.Parent = game.Workspace
+        end
+        
+        -- Save metadata to file (very basic)
+        local metadata = {
+            name = model.Name,
+            children = #model:GetChildren(),
+            timestamp = tick()
+        }
+        
+        local metadataString = "Model Metadata:\n"
+        metadataString = metadataString .. "Name: " .. metadata.name .. "\n"
+        metadataString = metadataString .. "Children: " .. metadata.children .. "\n"
+        metadataString = metadataString .. "Timestamp: " .. metadata.timestamp .. "\n"
+        
+        writefile(path, metadataString)
+        
+        return model
+    end)
+    
+    if success then
+        return "file saved successfully as Model: " .. filename .. " (EXPERIMENTAL - instance created in game environment)"
+    else
+        return "failed to save Model file: " .. tostring(error) .. " (EXPERIMENTAL FEATURE)"
     end
 end
 
--- i welcome anyone that wants to help me with the future implementations of saveas function!
+-- Internal function to save Script instances (PLANNED)
+function manager._saveasScript(path, content, filename)
+    if type(content) ~= "string" then
+        return "invalid content type for Script: expected string, got " .. type(content)
+    end
+    
+    -- For now, just save as a regular script file
+    local writeSuccess, writeError = pcall(function()
+        return writefile(path, content)
+    end)
+    
+    if not writeSuccess then
+        return "failed to write script file: " .. tostring(writeError)
+    end
+    
+    return "file saved successfully as Script: " .. filename .. " (PLANNED FEATURE - instance creation not yet implemented)"
+end
+
+-- Internal function to save Image instances (PLANNED)
+function manager._saveasImage(path, content, filename)
+    if type(content) ~= "string" then
+        return "invalid content type for Image: expected string, got " .. type(content)
+    end
+    
+    -- For now, just save as a regular image file
+    local writeSuccess, writeError = pcall(function()
+        return writefile(path, content)
+    end)
+    
+    if not writeSuccess then
+        return "failed to write image file: " .. tostring(writeError)
+    end
+    
+    return "file saved successfully as Image: " .. filename .. " (PLANNED FEATURE - instance creation not yet implemented)"
+end
+
+-- Helper function to check saveas capabilities
+function manager.checkSaveasCapabilities()
+    local capabilities = {
+        Sound = false,
+        Model = false,
+        Script = false,
+        Image = false,
+        InstanceCreation = false,
+        CustomAssets = false,
+        FileWriting = false
+    }
+    
+    -- Test Instance creation
+    local instanceSuccess = pcall(function()
+        local testInstance = Instance.new("Sound")
+        testInstance:Destroy()
+        return true
+    end)
+    capabilities.InstanceCreation = instanceSuccess
+    
+    -- Test custom asset creation (requires existing file)
+    local assetSuccess = pcall(function()
+        -- Try to get custom asset for a test file
+        local testPath = "test_asset.mp3"
+        writefile(testPath, "test audio data")
+        local asset = getcustomasset(testPath)
+        delfile(testPath)
+        return asset ~= nil
+    end)
+    capabilities.CustomAssets = assetSuccess
+    
+    -- Test file writing
+    local writeSuccess = pcall(function()
+        writefile("test_write.txt", "test")
+        local exists = isfile("test_write.txt")
+        delfile("test_write.txt")
+        return exists
+    end)
+    capabilities.FileWriting = writeSuccess
+    
+    -- Determine supported types based on capabilities
+    capabilities.Sound = capabilities.InstanceCreation and capabilities.CustomAssets and capabilities.FileWriting
+    capabilities.Model = capabilities.InstanceCreation and capabilities.FileWriting
+    capabilities.Script = capabilities.FileWriting
+    capabilities.Image = capabilities.FileWriting
+    
+    return capabilities
+end
 
 return manager

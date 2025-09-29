@@ -255,6 +255,45 @@ for _, item in ipairs(contents) do
 end
 ```
 
+### Save Operations (EXPERIMENTAL)
+
+#### `manager.saveas(path, content, type)`
+Saves content as a specific type of instance in the game environment.
+
+**Parameters:**
+- `path` (string) - File path where to save the instance
+- `content` (string/table/userdata) - Content to save (varies by type)
+- `type` (string) - Type of instance to create ("Sound", "Model", "Script", "Image")
+
+**Returns:**
+- `string` - Success message or error description
+
+**Example:**
+```lua
+-- Save audio file as Sound instance
+local audioData = readfile("music.mp3")
+local result = manager.saveas("sounds/music.mp3", audioData, "Sound")
+
+-- Check capabilities before using
+local capabilities = manager.checkSaveasCapabilities()
+if capabilities.Sound then
+    print("✅ Sound saving is supported")
+end
+```
+
+#### `manager.checkSaveasCapabilities()`
+Checks which saveas features are supported by the current executor.
+
+**Returns:**
+- `table` - Capabilities object with boolean values for each feature
+
+**Example:**
+```lua
+local capabilities = manager.checkSaveasCapabilities()
+print("Sound support:", capabilities.Sound)
+print("Instance creation:", capabilities.InstanceCreation)
+```
+
 ### System Diagnostics
 
 #### `manager.nodefecth()`

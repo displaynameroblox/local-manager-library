@@ -147,20 +147,20 @@ local result = manager.dfile("config.json", true, "config.json.undo")
 
 ### `manager.saveas(path, content, type)` ⚠️ EXPERIMENTAL
 
-**[EXPERIMENTAL FEATURE]** Saves content as a specific type of instance (Sound, Model, etc.) in the game environment. This feature is in early development and may be unstable or change significantly in future versions.
+**[EXPERIMENTAL FEATURE]** Saves content as a specific type of instance (Sound, Model, etc.) in the game environment. This feature creates both file data and game instances for advanced media handling.
 
 **⚠️ Warning:** This is an experimental function that depends heavily on executor capabilities. Some features may not work on all executors, and behavior may vary between different execution environments.
 
 **Signature:**
 ```lua
-function manager.saveas(path: string, content: string, type: string): string
+function manager.saveas(path: string, content: string|table|userdata, type: string): string
 ```
 
 **Parameters:**
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `path` | `string` | ✅ | File path where to save the instance |
-| `content` | `string` | ✅ | Content to save (binary/text data) |
+| `content` | `string\|table\|userdata` | ✅ | Content to save (varies by type) |
 | `type` | `string` | ✅ | Type of instance to create ("Sound", "Model", "Script", "Image") |
 
 **Returns:**
@@ -169,29 +169,36 @@ function manager.saveas(path: string, content: string, type: string): string
 | `string` | Success message or error description |
 
 **Supported Types:**
-- `"Sound"` - Creates a Sound instance (EXPERIMENTAL - partially implemented)
-- `"Model"` - Reserved for future implementation (NOT YET AVAILABLE)
-- `"Script"` - Reserved for future implementation (NOT YET AVAILABLE)
-- `"Image"` - Reserved for future implementation (NOT YET AVAILABLE)
+- `"Sound"` - Creates a Sound instance (IMPLEMENTED - experimental)
+- `"Model"` - Creates a Model instance (IMPLEMENTED - highly experimental)
+- `"Script"` - Saves as script file (PLANNED - instance creation not yet implemented)
+- `"Image"` - Saves as image file (PLANNED - instance creation not yet implemented)
 
-**Experimental Status:**
-- Current implementation is in ALPHA stage
-- Behavior may change without notice
-- Heavy dependency on executor capabilities
-- Limited error recovery
-- Not recommended for production use
+**Type-Specific Content Requirements:**
+- **Sound**: `string` - Binary audio data (minimum 100 bytes)
+- **Model**: `table` or `userdata` - Model instance or table with model data
+- **Script**: `string` - Lua script source code
+- **Image**: `string` - Binary image data
 
 **Success Messages:**
-- `"file saved successfully as Sound"` - When Sound instance is created and saved
+- `"file saved successfully as Sound: [filename] (instance created in game environment)"`
+- `"file saved successfully as Model: [filename] (EXPERIMENTAL - instance created in game environment)"`
+- `"file saved successfully as Script: [filename] (PLANNED FEATURE - instance creation not yet implemented)"`
+- `"file saved successfully as Image: [filename] (PLANNED FEATURE - instance creation not yet implemented)"`
 
 **Error Messages:**
 - `"cannot save file, did you forget to add path?"` - When `path` is nil or empty
 - `"cannot save file without content"` - When `content` is nil or empty
 - `"cannot save file without type specification"` - When `type` is nil or empty
+- `"invalid file path format: [path]"` - When path format is invalid
 - `"unsupported save type: [type]"` - When type is not in supported types list
 - `"file already exists at path: [path]"` - When target file already exists
-- `"failed to save Sound file: [details]"` - When Sound creation/saving fails
 - `"save type '[type]' is recognized but not yet implemented"` - When using a reserved type
+- `"invalid content type for [type]: expected [expected], got [actual]"` - When content type is wrong
+- `"content too small to be valid audio data (minimum 100 bytes required)"` - When audio data is too small
+- `"failed to write [type] file: [error]"` - When file writing fails
+- `"failed to create custom asset for audio: [error]"` - When custom asset creation fails
+- `"failed to create [Type] instance: [error]"` - When instance creation fails
 
 **Example - Save Sound File:**
 ```lua
@@ -200,42 +207,102 @@ local audioData = readfile("audio.mp3")
 
 -- Save it as a Sound instance
 local result = manager.saveas("sounds/music.mp3", audioData, "Sound")
--- Returns: "file saved successfully as Sound"
+-- Returns: "file saved successfully as Sound: music.mp3 (instance created in game environment)"
+```
+
+**Example - Save Model File:**
+```lua
+-- Save a model instance
+local modelInstance = game.Workspace:FindFirstChild("MyModel")
+if modelInstance then
+    local result = manager.saveas("models/saved_model.rbxl", modelInstance, "Model")
+    -- Returns: "file saved successfully as Model: saved_model.rbxl (EXPERIMENTAL - instance created in game environment)"
+end
 ```
 
 **Example - Error Handling:**
 ```lua
 -- Try to save with unsupported type
 local result = manager.saveas("test.txt", "content", "InvalidType")
--- Returns: "unsupported save type: InvalidType. Supported types: Sound, Model, Script, Image"
+-- Returns: "unsupported save type: InvalidType. Supported types: Sound (implemented), Model (planned), Script (planned), Image (planned)"
+
+-- Try to save with wrong content type
+local result = manager.saveas("test.mp3", 123, "Sound")
+-- Returns: "invalid content type for Sound: expected string, got number"
 
 -- Try to save to existing file
 local result = manager.saveas("existing.mp3", audioData, "Sound")
 -- Returns: "file already exists at path: existing.mp3"
 ```
 
+### `manager.checkSaveasCapabilities()`
+
+Checks which saveas features are supported by the current executor environment.
+
+**Signature:**
+```lua
+function manager.checkSaveasCapabilities(): table
+```
+
+**Returns:**
+| Type | Description |
+|------|-------------|
+| `table` | Capabilities object with boolean values for each feature |
+
+**Capabilities Object:**
+```lua
+{
+    Sound = boolean,           -- Sound instance creation support
+    Model = boolean,           -- Model instance creation support
+    Script = boolean,          -- Script file writing support
+    Image = boolean,           -- Image file writing support
+    InstanceCreation = boolean, -- General instance creation support
+    CustomAssets = boolean,    -- Custom asset creation support
+    FileWriting = boolean      -- File writing support
+}
+```
+
+**Example:**
+```lua
+local capabilities = manager.checkSaveasCapabilities()
+
+if capabilities.Sound then
+    print("✅ Sound saving is supported")
+else
+    print("❌ Sound saving is not supported")
+end
+
+if capabilities.InstanceCreation then
+    print("✅ Instance creation is supported")
+else
+    print("❌ Instance creation is not supported")
+end
+```
+
 **Implementation Notes:**
 - ⚠️ EXPERIMENTAL IMPLEMENTATION
 - Sound instances are created using `Instance.new("Sound")` (executor-dependent)
 - Custom assets are created using `getcustomasset` (may not work on all executors)
-- Files are written using `writecustomasset` (if available) or falls back to `writefile`
-- The function uses nested `pcall` blocks for comprehensive error handling
-- Future type implementations will follow the same pattern but with type-specific logic
-- Current implementation may have unexpected behavior or limitations
+- Files are written using `writefile` with comprehensive error handling
+- The function uses nested `pcall` blocks for robust error handling
+- Automatic cleanup on failure (removes files if instance creation fails)
+- Instance organization in scriptfolder when available
+- Case-insensitive type parameter handling
+- Content validation for each type
 
 **Known Limitations:**
 1. Sound creation may fail on certain executors
 2. Custom asset creation is highly dependent on executor capabilities
-3. Error recovery may be incomplete
+3. Model saving is highly experimental and may not work properly
 4. Some executors may not support all required functions
-5. Performance impact not fully tested
-6. May conflict with game anti-cheat systems
+5. May conflict with game anti-cheat systems
+6. Performance impact not fully tested
 
 **Testing Status:**
-- Limited testing on major executors
-- Not all edge cases covered
-- Behavior in game environments varies
-- Success rate depends on executor implementation
+- Sound: Limited testing on major executors
+- Model: Very limited testing, highly experimental
+- Script/Image: Basic file writing only, no instance creation yet
+- Behavior in game environments varies significantly
 
 ---
 

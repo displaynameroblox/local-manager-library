@@ -8,6 +8,7 @@ Complete troubleshooting guide for resolving issues with the Local Manager Libra
 - [Error Codes Reference](#error-codes-reference)
 - [File Operations Issues](#file-operations-issues)
 - [File Deletion Issues](#file-deletion-issues)
+- [Save Operations Issues](#save-operations-issues)
 - [HTTP/Network Issues](#httpnetwork-issues)
 - [HTML to GUI Issues](#html-to-gui-issues)
 - [Media Operations Issues](#media-operations-issues)
@@ -117,6 +118,23 @@ end
 | Error Code | Description | Common Causes | Solution |
 |------------|-------------|---------------|----------|
 | `ERR_SCRIPTFOLDER_CREATE_FAILED` | Failed to create scriptfolder | Workspace access denied, GUI creation not supported | Check executor GUI permissions and Roblox environment |
+
+### Save Operations Error Codes
+
+| Error Code | Description | Common Causes | Solution |
+|------------|-------------|---------------|----------|
+| `ERR_SAVEAS_PATH_MISSING` | Cannot save file, did you forget to add path? | Missing file path parameter | Provide valid file path |
+| `ERR_SAVEAS_CONTENT_MISSING` | Cannot save file without content | Missing content parameter | Provide content to save |
+| `ERR_SAVEAS_TYPE_MISSING` | Cannot save file without type specification | Missing type parameter | Specify supported type (Sound, Model, Script, Image) |
+| `ERR_SAVEAS_INVALID_PATH` | Invalid file path format | Malformed file path | Use valid file path format |
+| `ERR_SAVEAS_UNSUPPORTED_TYPE` | Unsupported save type | Invalid type specified | Use one of: Sound, Model, Script, Image |
+| `ERR_SAVEAS_FILE_EXISTS` | File already exists at path | Target file exists | Use different path or delete existing file |
+| `ERR_SAVEAS_TYPE_NOT_IMPLEMENTED` | Save type is recognized but not yet implemented | Using reserved type | Only use fully implemented types (currently Sound) |
+| `ERR_SAVEAS_INVALID_CONTENT_TYPE` | Invalid content type for type | Wrong content type for specified type | Use correct content type (string for Sound/Script/Image, table/userdata for Model) |
+| `ERR_SAVEAS_CONTENT_TOO_SMALL` | Content too small to be valid audio data | Audio data too small | Ensure audio content is at least 100 bytes |
+| `ERR_SAVEAS_WRITE_FAILED` | Failed to write type file | File writing error | Check file permissions and disk space |
+| `ERR_SAVEAS_ASSET_FAILED` | Failed to create custom asset for audio | Custom asset creation failed | Check executor custom asset support |
+| `ERR_SAVEAS_INSTANCE_FAILED` | Failed to create Type instance | Instance creation failed | Check executor instance creation support |
 
 ### File Deletion Error Codes
 
@@ -604,6 +622,223 @@ end
        print("✅ Undo file is valid")
    else
        print("❌ Undo file is corrupted or empty")
+   end
+   ```
+
+---
+
+## 💾 Save Operations Issues
+
+### Issue: "Cannot save file, did you forget to add path?"
+
+**Symptoms:**
+- Function returns error about missing path parameter
+- No file saving occurs
+
+**Diagnosis:**
+```lua
+-- Check if path is provided
+local path = "sounds/music.mp3"  -- Make sure this is not nil or empty
+
+if not path or path == "" then
+    print("❌ Path is missing or empty")
+else
+    print("✅ Path is valid:", path)
+end
+```
+
+**Solutions:**
+1. **Provide file path:**
+   ```lua
+   local result = manager.saveas("sounds/music.mp3", audioData, "Sound")  -- ✅ Correct
+   local result = manager.saveas("", audioData, "Sound")                   -- ❌ Empty path
+   local result = manager.saveas(nil, audioData, "Sound")                  -- ❌ Nil path
+   ```
+
+2. **Check path format:**
+   ```lua
+   -- Ensure path has valid format
+   local path = "folder/subfolder/file.mp3"  -- ✅ Valid
+   local path = "file.mp3"                   -- ✅ Valid
+   local path = "/invalid/path"              -- ❌ Invalid format
+   ```
+
+### Issue: "Invalid content type for Sound: expected string, got number"
+
+**Symptoms:**
+- Function returns content type error
+- Saving fails due to wrong data type
+
+**Diagnosis:**
+```lua
+-- Check content type
+local content = readfile("audio.mp3")  -- Should be string
+local contentType = type(content)
+
+print("Content type:", contentType)
+if contentType ~= "string" then
+    print("❌ Wrong content type for Sound")
+else
+    print("✅ Correct content type for Sound")
+end
+```
+
+**Solutions:**
+1. **Use correct content type for each save type:**
+   ```lua
+   -- Sound: string (binary audio data)
+   local audioData = readfile("music.mp3")
+   manager.saveas("sound.mp3", audioData, "Sound")
+   
+   -- Model: table or userdata (Model instance)
+   local modelInstance = game.Workspace:FindFirstChild("MyModel")
+   manager.saveas("model.rbxl", modelInstance, "Model")
+   
+   -- Script: string (Lua source code)
+   local scriptCode = "print('Hello World')"
+   manager.saveas("script.lua", scriptCode, "Script")
+   
+   -- Image: string (binary image data)
+   local imageData = readfile("image.png")
+   manager.saveas("image.png", imageData, "Image")
+   ```
+
+### Issue: "Failed to create custom asset for audio"
+
+**Symptoms:**
+- File is written but custom asset creation fails
+- Sound instance creation fails
+
+**Diagnosis:**
+```lua
+-- Test custom asset capabilities
+local capabilities = manager.checkSaveasCapabilities()
+
+if capabilities.CustomAssets then
+    print("✅ Custom asset creation is supported")
+else
+    print("❌ Custom asset creation is not supported")
+end
+
+if capabilities.InstanceCreation then
+    print("✅ Instance creation is supported")
+else
+    print("❌ Instance creation is not supported")
+end
+```
+
+**Solutions:**
+1. **Check executor capabilities:**
+   ```lua
+   -- Run capability check
+   local capabilities = manager.checkSaveasCapabilities()
+   
+   if not capabilities.Sound then
+       print("❌ Sound saving not supported on this executor")
+       return
+   end
+   
+   if not capabilities.CustomAssets then
+       print("❌ Custom asset creation not supported")
+       return
+   end
+   ```
+
+2. **Use alternative approach:**
+   ```lua
+   -- If saveas fails, use regular file operations
+   local audioData = readfile("music.mp3")
+   local result = manager.new("backup_music.mp3", audioData)
+   print("Saved as regular file:", result)
+   ```
+
+### Issue: "Save type 'Model' is recognized but not yet implemented"
+
+**Symptoms:**
+- Function returns not implemented error
+- Model saving fails
+
+**Diagnosis:**
+```lua
+-- Check which types are implemented
+local capabilities = manager.checkSaveasCapabilities()
+
+print("Implemented types:")
+for type, supported in pairs(capabilities) do
+    if type ~= "InstanceCreation" and type ~= "CustomAssets" and type ~= "FileWriting" then
+        print("  " .. type .. ":", supported and "✅" or "❌")
+    end
+end
+```
+
+**Solutions:**
+1. **Use only implemented types:**
+   ```lua
+   -- Currently only Sound is fully implemented
+   local result = manager.saveas("audio.mp3", audioData, "Sound")  -- ✅ Works
+   
+   -- These are not yet implemented:
+   -- local result = manager.saveas("model.rbxl", modelData, "Model")     -- ❌ Not implemented
+   -- local result = manager.saveas("script.lua", scriptCode, "Script")   -- ❌ Not implemented
+   -- local result = manager.saveas("image.png", imageData, "Image")      -- ❌ Not implemented
+   ```
+
+2. **Use alternative methods:**
+   ```lua
+   -- For models, save as regular file for now
+   local modelData = "Model metadata here"
+   local result = manager.new("model_data.txt", modelData)
+   
+   -- For scripts, save as regular file
+   local scriptCode = "print('Hello World')"
+   local result = manager.new("script.lua", scriptCode)
+   ```
+
+### Issue: "Content too small to be valid audio data"
+
+**Symptoms:**
+- Audio file validation fails
+- Error about minimum size requirement
+
+**Diagnosis:**
+```lua
+-- Check content size
+local audioData = readfile("audio.mp3")
+local dataSize = #audioData
+
+print("Audio data size:", dataSize, "bytes")
+if dataSize < 100 then
+    print("❌ Audio data too small (minimum 100 bytes required)")
+else
+    print("✅ Audio data size is sufficient")
+end
+```
+
+**Solutions:**
+1. **Ensure valid audio data:**
+   ```lua
+   -- Make sure you're reading actual audio file
+   local audioData = readfile("music.mp3")
+   
+   -- Check if file exists and has content
+   if not audioData or #audioData < 100 then
+       print("❌ Invalid or corrupted audio file")
+       return
+   end
+   
+   -- Now try to save
+   local result = manager.saveas("saved_music.mp3", audioData, "Sound")
+   ```
+
+2. **Validate audio file format:**
+   ```lua
+   -- Check file extension and content
+   local path = "audio.mp3"
+   local extension = path:match("%.(%w+)$")
+   
+   if not extension or not (extension:lower() == "mp3" or extension:lower() == "wav" or extension:lower() == "ogg") then
+       print("❌ Unsupported audio format")
+       return
    end
    ```
 

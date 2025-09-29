@@ -125,6 +125,22 @@ end
 manager.media(nil, "audio", "audio", true, "music")
 ```
 
+### 6. Save Media as Instances (EXPERIMENTAL)
+
+```lua
+-- Check if saveas is supported before using
+local capabilities = manager.checkSaveasCapabilities()
+
+if capabilities.Sound then
+    -- Save audio file as Sound instance
+    local audioData = readfile("music.mp3")
+    local result = manager.saveas("sounds/music.mp3", audioData, "Sound")
+    print("Save result:", result)
+else
+    print("❌ Sound saving not supported on this executor")
+end
+```
+
 ## 🔧 System Check
 
 Run this to see what your executor can do:
@@ -195,6 +211,7 @@ You now know the basics of the Local Manager Library. Start building amazing thi
 | `manager.download()` | Download from URL | `manager.download("https://example.com/file.txt", "local.txt", "GET")` |
 | `manager.html()` | Load HTML or convert to GUI | `manager.html(nil, true, "page.html", true)` |
 | `manager.media()` | Play audio files | `manager.media("song.mp3", "audio", "audio", false)` |
+| `manager.saveas()` | Save as instance (EXPERIMENTAL) | `manager.saveas("audio.mp3", data, "Sound")` |
 | `manager.getScriptFolder()` | Get scriptfolder | `manager.getScriptFolder()` |
 | `manager.nodefecth()` | Check system capabilities | `manager.nodefecth()` |
 
