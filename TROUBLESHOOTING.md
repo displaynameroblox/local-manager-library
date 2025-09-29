@@ -9,6 +9,7 @@ Complete troubleshooting guide for resolving issues with the Local Manager Libra
 - [File Operations Issues](#file-operations-issues)
 - [HTTP/Network Issues](#httpnetwork-issues)
 - [HTML to GUI Issues](#html-to-gui-issues)
+- [Media Operations Issues](#media-operations-issues)
 - [System Diagnostics Issues](#system-diagnostics-issues)
 - [Executor-Specific Issues](#executor-specific-issues)
 - [Performance Issues](#performance-issues)
@@ -89,6 +90,23 @@ end
 | `ERR_HTML_DOWNLOAD_FAILED` | Failed to load HTML from URL: [url] | Network issues, invalid URL | Check internet and URL |
 | `ERR_HTML_NO_CONTENT` | No HTML content available | Empty response or file | Check source content |
 | `ERR_HTML_CONVERSION_FAILED` | Failed to convert HTML to GUI | HTML parsing error, GUI creation failed | Check HTML syntax and GUI permissions |
+
+### Media Operations Error Codes
+
+| Error Code | Description | Common Causes | Solution |
+|------------|-------------|---------------|----------|
+| `ERR_MEDIA_PATH_MISSING` | Cannot handle media, did you forget to add path? | Missing path parameter | Provide file path |
+| `ERR_MEDIA_TYPE_MISSING` | Cannot handle media, did you forget to add type? | Missing type parameter | Provide media type |
+| `ERR_MEDIA_TYPEOF_MISSING` | Cannot handle media, did you forget to add typeofmedia? | Missing typeofmedia parameter | Provide specific media type |
+| `ERR_MEDIA_INVALID_TYPE` | Invalid media type | Unsupported media type | Use "audio", "video", "image", or "document" |
+| `ERR_MEDIA_VIDEO_UNSUPPORTED` | Videos are not supported yet | Trying to play video files | Use audio files instead |
+| `ERR_MEDIA_FOLDER_PATH_MISSING` | Cannot handle media folder, did you forget to add folder path? | Missing folder path for folder mode | Provide folder path |
+| `ERR_MEDIA_FOLDER_NOT_FOUND` | Folder not found: [folder] | Specified folder doesn't exist | Check folder path and existence |
+| `ERR_MEDIA_FOLDER_LIST_FAILED` | Failed to list files in folder | Folder access permission issues | Check folder permissions |
+| `ERR_MEDIA_NO_AUDIO_FILES` | No audio files found in folder | Folder contains no audio files | Add audio files (.mp3, .wav, .ogg, .m4a, .aac) |
+| `ERR_MEDIA_READ_FAILED` | Failed to read media file | File corruption, permission issues | Check file integrity and permissions |
+| `ERR_MEDIA_ASSET_FAILED` | Failed to get custom asset for audio | Audio file format issues | Check audio file format and integrity |
+| `ERR_MEDIA_PLAY_FAILED` | Failed to play audio | Audio system issues | Check Roblox audio system and file format |
 
 ---
 
@@ -349,6 +367,240 @@ end
            <h1 style="color: white;">Title</h1>
        </div>
    ]]
+   ```
+
+---
+
+## 🎵 Media Operations Issues
+
+### Issue: "Cannot handle media, did you forget to add [parameter]?"
+
+**Symptoms:**
+- Function returns error about missing parameters
+- No media processing occurs
+
+**Diagnosis:**
+```lua
+-- Check required parameters
+local path = "song.mp3"        -- Make sure this is not nil or empty
+local type = "audio"           -- Make sure this is not nil or empty
+local typeofmedia = "audio"    -- Make sure this is not nil or empty
+
+if not path or path == "" then
+    print("❌ Path is missing or empty")
+end
+if not type or type == "" then
+    print("❌ Type is missing or empty")
+end
+if not typeofmedia or typeofmedia == "" then
+    print("❌ Typeofmedia is missing or empty")
+end
+```
+
+**Solutions:**
+1. **Provide all required parameters:**
+   ```lua
+   manager.media("song.mp3", "audio", "audio", false)  -- ✅ Correct
+   manager.media("", "audio", "audio", false)          -- ❌ Empty path
+   manager.media("song.mp3", "", "audio", false)       -- ❌ Empty type
+   ```
+
+2. **Check parameter order:**
+   ```lua
+   -- Correct parameter order: path, type, typeofmedia, isfolder, folder
+   manager.media("song.mp3", "audio", "audio", false)
+   ```
+
+### Issue: "Invalid media type"
+
+**Symptoms:**
+- Function returns "invalid media type"
+- Media processing fails
+
+**Diagnosis:**
+```lua
+-- Check supported media types
+local supportedTypes = {"audio", "video", "image", "document"}
+local typeofmedia = "audio"  -- Your media type
+
+local isValid = false
+for _, supportedType in ipairs(supportedTypes) do
+    if typeofmedia == supportedType then
+        isValid = true
+        break
+    end
+end
+
+if not isValid then
+    print("❌ Invalid media type:", typeofmedia)
+else
+    print("✅ Valid media type:", typeofmedia)
+end
+```
+
+**Solutions:**
+1. **Use supported media types:**
+   ```lua
+   manager.media("song.mp3", "audio", "audio", false)     -- ✅ Correct
+   manager.media("song.mp3", "audio", "music", false)     -- ❌ Invalid type
+   ```
+
+2. **Check case sensitivity:**
+   ```lua
+   manager.media("song.mp3", "audio", "audio", false)     -- ✅ Correct
+   manager.media("song.mp3", "audio", "Audio", false)     -- ❌ Wrong case
+   ```
+
+### Issue: "Folder not found: [folder]"
+
+**Symptoms:**
+- Folder audio playback fails
+- Error message shows folder path
+
+**Diagnosis:**
+```lua
+-- Check if folder exists
+local folderPath = "music"
+local folderExists = isfolder(folderPath)
+
+if folderExists then
+    print("✅ Folder exists:", folderPath)
+else
+    print("❌ Folder not found:", folderPath)
+end
+
+-- List available folders
+local files = listfiles(".")
+for _, file in ipairs(files) do
+    print("Available:", file)
+end
+```
+
+**Solutions:**
+1. **Verify folder path:**
+   ```lua
+   -- Check current directory structure
+   local files = listfiles(".")
+   for _, file in ipairs(files) do
+       print("Found:", file)
+   end
+   ```
+
+2. **Create folder if needed:**
+   ```lua
+   -- Create folder first
+   makefolder("music")
+   -- Then use it
+   manager.media(nil, "audio", "audio", true, "music")
+   ```
+
+### Issue: "No audio files found in folder"
+
+**Symptoms:**
+- Folder exists but contains no audio files
+- Function returns "no audio files found in folder"
+
+**Diagnosis:**
+```lua
+-- Check folder contents
+local folderPath = "music"
+local files = listfiles(folderPath)
+
+print("Files in folder:", folderPath)
+for _, file in ipairs(files) do
+    local fileName = file:match("([^/\\]+)$")
+    local extension = fileName:match("%.(%w+)$")
+    print("File:", fileName, "Extension:", extension)
+end
+
+-- Check for audio extensions
+local audioExtensions = {".mp3", ".wav", ".ogg", ".m4a", ".aac"}
+local hasAudio = false
+
+for _, file in ipairs(files) do
+    local fileName = file:match("([^/\\]+)$")
+    local extension = fileName:match("%.(%w+)$")
+    if extension then
+        extension = "." .. extension:lower()
+        for _, audioExt in ipairs(audioExtensions) do
+            if extension == audioExt then
+                hasAudio = true
+                break
+            end
+        end
+    end
+end
+
+if hasAudio then
+    print("✅ Audio files found")
+else
+    print("❌ No audio files found")
+end
+```
+
+**Solutions:**
+1. **Add audio files to folder:**
+   ```lua
+   -- Add audio files with supported extensions
+   manager.new("music/song1.mp3", "audio content")
+   manager.new("music/song2.wav", "audio content")
+   ```
+
+2. **Check file extensions:**
+   ```lua
+   -- Use supported audio extensions
+   -- .mp3, .wav, .ogg, .m4a, .aac
+   ```
+
+### Issue: "Failed to play audio"
+
+**Symptoms:**
+- Audio file exists but won't play
+- Function returns "failed to play audio"
+
+**Diagnosis:**
+```lua
+-- Test audio system
+local systemInfo = manager.nodefecth()
+if not systemInfo.gui["Instance.new"] then
+    print("❌ GUI creation not supported - needed for audio")
+else
+    print("✅ GUI creation supported")
+end
+
+-- Test custom asset
+local assetSuccess, asset = pcall(function()
+    return getcustomasset("song.mp3")
+end)
+
+if assetSuccess then
+    print("✅ Custom asset created successfully")
+else
+    print("❌ Custom asset creation failed:", asset)
+end
+```
+
+**Solutions:**
+1. **Check audio file format:**
+   ```lua
+   -- Ensure audio file is valid and supported format
+   -- Test with a known working audio file
+   ```
+
+2. **Check Roblox environment:**
+   ```lua
+   -- Make sure you're in a valid Roblox game
+   if game and game.Workspace then
+       print("✅ Valid Roblox environment")
+   else
+       print("❌ Invalid environment")
+   end
+   ```
+
+3. **Test with simple audio:**
+   ```lua
+   -- Try with a basic audio file first
+   manager.media("simple.mp3", "audio", "audio", false)
    ```
 
 ---

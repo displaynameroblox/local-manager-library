@@ -7,6 +7,7 @@ Complete API reference for the Local Manager Library.
 - [File Operations](#file-operations)
 - [HTTP Operations](#http-operations)
 - [HTML to GUI Conversion](#html-to-gui-conversion)
+- [Media Operations](#media-operations)
 - [System Diagnostics](#system-diagnostics)
 - [Error Codes](#error-codes)
 - [Data Types](#data-types)
@@ -218,6 +219,82 @@ function manager.createSampleHtmlGui(): string
 ```lua
 local result = manager.createSampleHtmlGui()
 -- Creates a sample GUI with buttons, inputs, and styling
+```
+
+---
+
+## Media Operations
+
+### `manager.media(path, type, typeofmedia, isfolder, folder)`
+
+Handles media files including audio playback for single files or entire folders.
+
+**Signature:**
+```lua
+function manager.media(path: string?, type: string, typeofmedia: string, isfolder: boolean?, folder: string?): string
+```
+
+**Parameters:**
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `path` | `string` | ❌ | File path (ignored when `isfolder` is true) |
+| `type` | `string` | ✅ | Media type category |
+| `typeofmedia` | `string` | ✅ | Specific media type ("audio", "video", "image", "document") |
+| `isfolder` | `boolean` | ❌ | Whether to process a folder of files |
+| `folder` | `string` | ❌ | Folder path (required when `isfolder` is true) |
+
+**Returns:**
+| Type | Description |
+|------|-------------|
+| `string` | Success message, error description, or file content |
+
+**Supported Media Types:**
+- `"audio"` - Audio files (.mp3, .wav, .ogg, .m4a, .aac)
+- `"video"` - Video files (not yet supported)
+- `"image"` - Image files (returns content)
+- `"document"` - Document files (returns content)
+
+**Success Messages:**
+- `"media played successfully"` - Single audio file played
+- `"played X/Y audio files from folder successfully"` - Folder playback results
+- Returns file content for non-audio media types
+
+**Error Messages:**
+- `"cannot handle media, did you forget to add path?"` - When `path` is nil or empty
+- `"cannot handle media, did you forget to add type?"` - When `type` is nil or empty
+- `"cannot handle media, did you forget to add typeofmedia?"` - When `typeofmedia` is nil or empty
+- `"invalid media type"` - When `typeofmedia` is not supported
+- `"videos are not supported yet"` - When trying to play video files
+- `"cannot handle media folder, did you forget to add folder path?"` - When folder path is missing
+- `"folder not found: [folder]"` - When specified folder doesn't exist
+- `"failed to list files in folder"` - When folder access fails
+- `"no audio files found in folder"` - When folder contains no audio files
+- `"failed to read media file"` - When single file cannot be read
+- `"failed to get custom asset for audio"` - When audio asset creation fails
+- `"failed to play audio"` - When audio playback fails
+
+**Example - Single Audio File:**
+```lua
+local result = manager.media("song.mp3", "audio", "audio", false)
+-- Returns: "media played successfully"
+```
+
+**Example - Folder Audio Playback:**
+```lua
+local result = manager.media(nil, "audio", "audio", true, "music")
+-- Returns: "played 5/5 audio files from folder successfully"
+```
+
+**Example - Image File:**
+```lua
+local result = manager.media("image.png", "image", "image", false)
+-- Returns: Binary content of the image file
+```
+
+**Example - Document File:**
+```lua
+local result = manager.media("document.txt", "document", "document", false)
+-- Returns: Text content of the document
 ```
 
 ---

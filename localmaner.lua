@@ -397,9 +397,160 @@ end
 
 -- okay here should be a part for handling mp3 files and oher media files but im not sure how to do it
 
-function manager.media(path, type)
-    local ismedia = nil
-    return path
+function manager.media(path, type, typeofmedia, isfolder, folder)
+    local validmediatypes = {
+        video = true,
+        audio = true,
+        image = true,
+        document = true
+    }
+
+    -- error handling
+    if not path or path == "" then
+        return "cannot handle media, did you forget to add path?"
+    elseif not type or type == "" then
+        return "cannot handle media, did you forget to add type?"
+    elseif not typeofmedia or typeofmedia == "" then
+        return "cannot handle media, did you forget to add typeofmedia?"
+    end
+
+    if not validmediatypes[typeofmedia] then
+        return "invalid media type"
+    end
+
+    if typeofmedia == "video" then
+        return "videos are not supported yet"
+    end
+
+    if typeofmedia == "audio" then
+        if isfolder then
+            -- Handle folder of audio files
+            if not folder or folder == "" then
+                return "cannot handle media folder, did you forget to add folder path?"
+            end
+            
+            local folderExists = pcall(function()
+                return isfolder(folder)
+            end)
+            
+            if not folderExists then
+                return "folder not found: " .. folder
+            end
+            
+            local listSuccess, files = pcall(function()
+                return listfiles(folder)
+            end)
+            
+            if not listSuccess then
+                return "failed to list files in folder"
+            end
+            
+            -- Filter for audio files (common audio extensions)
+            local audioExtensions = {".mp3", ".wav", ".ogg", ".m4a", ".aac"}
+            local audioFiles = {}
+            
+            for _, file in ipairs(files) do
+                local fileName = file:match("([^/\\]+)$") -- Get filename from path
+                local extension = fileName:match("%.(%w+)$")
+                if extension then
+                    extension = "." .. extension:lower()
+                    for _, audioExt in ipairs(audioExtensions) do
+                        if extension == audioExt then
+                            table.insert(audioFiles, file)
+                            break
+                        end
+                    end
+                end
+            end
+            
+            if #audioFiles == 0 then
+                return "no audio files found in folder"
+            end
+            
+            -- Play all audio files in the folder
+            local sounds = {}
+            local successCount = 0
+            
+            for i, audioFile in ipairs(audioFiles) do
+                local fileName = audioFile:match("([^/\\]+)$")
+                print("Playing audio file " .. i .. "/" .. #audioFiles .. ": " .. fileName)
+                
+                local assetSuccess, assetOrErr = pcall(function()
+                    return getcustomasset(audioFile)
+                end)
+                
+                if assetSuccess then
+                    local instanceSuccess = pcall(function()
+                        local sound = Instance.new("Sound")
+                        sound.Name = "Audio_" .. i .. "_" .. fileName
+                        sound.SoundId = assetOrErr
+                        sound.Parent = game.Workspace
+                        sound.Volume = 0.5 -- Set reasonable volume
+                        sound:Play()
+                        
+                        -- Clean up sound after it finishes playing
+                        sound.Ended:Connect(function()
+                            sound:Destroy()
+                        end)
+                        
+                        table.insert(sounds, sound)
+                    end)
+                    
+                    if instanceSuccess then
+                        successCount = successCount + 1
+                    end
+                end
+            end
+            
+            return "played " .. successCount .. "/" .. #audioFiles .. " audio files from folder successfully"
+            
+        else
+            -- Handle single audio file
+            local readsuccess, mediacontent = pcall(function()
+                return readfile(path)
+            end)
+            if not readsuccess then
+                return "failed to read media file"
+            end
+
+            local sound
+            local assetSuccess, assetOrErr = pcall(function()
+                return getcustomasset(path)
+            end)
+            if not assetSuccess then
+                return "failed to get custom asset for audio"
+            end
+
+            local instanceSuccess, instanceErr = pcall(function()
+                sound = Instance.new("Sound")
+                sound.Name = "Audio_" .. path:match("([^/\\]+)$") -- Use filename as sound name
+                sound.SoundId = assetOrErr
+                sound.Parent = game.Workspace
+                sound.Volume = 0.5 -- Set reasonable volume
+                sound:Play()
+                
+                -- Clean up sound after it finishes playing
+                sound.Ended:Connect(function()
+                    sound:Destroy()
+                end)
+            end)
+            if not instanceSuccess then
+                return "failed to play audio"
+            end
+
+            return "media played successfully"
+        end
+    end
+
+    -- For other media types, just return the file content for now
+    local readsuccess, mediacontent = pcall(function()
+        return readfile(path)
+    end)
+    if readsuccess then
+        return mediacontent
+    else
+        return "failed to read media file"
+    end
 end
 
 -- lets add a fucking html handler, we need website within roblox right???
