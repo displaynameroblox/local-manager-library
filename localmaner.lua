@@ -1315,8 +1315,10 @@ function saveas(path, content, type)
         end
     else
         -- Future type implementations would go here
-        return "save type '" .. type .. "' is recognized but not yet implemented"
+        return "save type '" .. type .. "' is recognized but not yet implemented, i'll try to add it very soon :3"
     end
 end
+
+-- i welcome anyone that wants to help me with the future implementations of saveas function!
 
 return manager

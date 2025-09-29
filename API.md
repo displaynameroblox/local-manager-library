@@ -145,9 +145,11 @@ local result = manager.dfile("config.json", true, "config.json.undo")
 -- Returns: "file restored successfully from undo backup"
 ```
 
-### `manager.saveas(path, content, type)`
+### `manager.saveas(path, content, type)` ⚠️ EXPERIMENTAL
 
-Saves content as a specific type of instance (Sound, Model, etc.) in the game environment.
+**[EXPERIMENTAL FEATURE]** Saves content as a specific type of instance (Sound, Model, etc.) in the game environment. This feature is in early development and may be unstable or change significantly in future versions.
+
+**⚠️ Warning:** This is an experimental function that depends heavily on executor capabilities. Some features may not work on all executors, and behavior may vary between different execution environments.
 
 **Signature:**
 ```lua
@@ -167,10 +169,17 @@ function manager.saveas(path: string, content: string, type: string): string
 | `string` | Success message or error description |
 
 **Supported Types:**
-- `"Sound"` - Creates a Sound instance (fully implemented)
-- `"Model"` - Reserved for future implementation
-- `"Script"` - Reserved for future implementation
-- `"Image"` - Reserved for future implementation
+- `"Sound"` - Creates a Sound instance (EXPERIMENTAL - partially implemented)
+- `"Model"` - Reserved for future implementation (NOT YET AVAILABLE)
+- `"Script"` - Reserved for future implementation (NOT YET AVAILABLE)
+- `"Image"` - Reserved for future implementation (NOT YET AVAILABLE)
+
+**Experimental Status:**
+- Current implementation is in ALPHA stage
+- Behavior may change without notice
+- Heavy dependency on executor capabilities
+- Limited error recovery
+- Not recommended for production use
 
 **Success Messages:**
 - `"file saved successfully as Sound"` - When Sound instance is created and saved
@@ -206,11 +215,27 @@ local result = manager.saveas("existing.mp3", audioData, "Sound")
 ```
 
 **Implementation Notes:**
-- Sound instances are created using `Instance.new("Sound")`
-- Custom assets are created using `getcustomasset`
-- Files are written using `writecustomasset` (if available) or `writefile`
+- ⚠️ EXPERIMENTAL IMPLEMENTATION
+- Sound instances are created using `Instance.new("Sound")` (executor-dependent)
+- Custom assets are created using `getcustomasset` (may not work on all executors)
+- Files are written using `writecustomasset` (if available) or falls back to `writefile`
 - The function uses nested `pcall` blocks for comprehensive error handling
 - Future type implementations will follow the same pattern but with type-specific logic
+- Current implementation may have unexpected behavior or limitations
+
+**Known Limitations:**
+1. Sound creation may fail on certain executors
+2. Custom asset creation is highly dependent on executor capabilities
+3. Error recovery may be incomplete
+4. Some executors may not support all required functions
+5. Performance impact not fully tested
+6. May conflict with game anti-cheat systems
+
+**Testing Status:**
+- Limited testing on major executors
+- Not all edge cases covered
+- Behavior in game environments varies
+- Success rate depends on executor implementation
 
 ---
 
