@@ -225,16 +225,17 @@ function manager.html(url: string?, islocal: boolean, path: string, convertToGui
 | `string` | Error description |
 
 **Success Messages:**
-- `"HTML converted to GUI successfully"`
-- `"html content downloaded and saved successfully"`
+- `"HTML converted to GUI successfully"` - When HTML is successfully converted to GUI
+- Returns HTML content as string - When HTML is loaded without GUI conversion
 
 **Error Messages:**
 - `"cannot handle html, did you forget to add path?"` - When `path` is nil
 - `"i won't classify that you are a programmer, put the url and the path, and say if it local or not. dont keep it empty"` - When both `islocal` and `url` are false/nil
 - `"file not found, did you type the path wrong?"` - When local file doesn't exist
-- `"failed to read local HTML file"` - When local file cannot be read
+- `"failed to read local file"` - When local file cannot be read
 - `"cannot find url, did you forget to add url?"` - When URL is nil but not local
-- `"failed to load HTML from URL: [url]"` - When URL request fails
+- `"cannot find url, or it's offline"` - When URL request fails or URL is offline
+- `"received empty response from server"` - When server returns empty content
 - `"no HTML content available"` - When no content is available
 
 **Example:**
