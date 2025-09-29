@@ -1317,6 +1317,34 @@ function saveas(path, content, type)
         -- Future type implementations would go here
         return "save type '" .. type .. "' is recognized but not yet implemented, i'll try to add it very soon :3"
     end
+    if type == "Model" then
+        -- very very very very super experimental stuff :P
+        local success1, err = pcall(function()
+            local saveinstance2 = Instance.new("Model")
+            if not saveinstance2 then
+                error("Failed to create Model instance")
+            else
+                saveinstance2.Name = path:match("([^/\\]+)$") or "NewModel"
+                -- try to copy the model to our instance
+                local clonesuccess, err = pcall(function()
+                    local modeltoclone = game:FindFirstChild(content.Name)
+                    if modeltoclone and modeltoclone:IsA("Model") then
+                        local clone = modeltoclone:Clone()
+                        clone.Parent = saveinstance2
+                        return saveinstance2
+                    else
+                        error("Content is not a valid Model instance")
+                    end
+                end)
+            end
+        end)
+        if success1 then
+            writefile(path, saveinstance2)
+        else
+            return "failed to save Model file: " ..
+            tostring(err) .. ", keep in mind, this feature is still experimental and may not work as expected."
+        end
+    end
 end
 
 -- i welcome anyone that wants to help me with the future implementations of saveas function!
