@@ -5,6 +5,52 @@
 
 local manager = {}
 
+-- ScriptFolder Management System
+local scriptFolder = nil
+
+local function getScriptFolder()
+    if not scriptFolder or not scriptFolder.Parent then
+        -- Create or find the scriptfolder
+        local existingFolder = game.Workspace:FindFirstChild("scriptfolder")
+        
+        if existingFolder then
+            scriptFolder = existingFolder
+        else
+            local success, folder = pcall(function()
+                local folder = Instance.new("Folder")
+                folder.Name = "scriptfolder"
+                folder.Parent = game.Workspace
+                return folder
+            end)
+            
+            if success then
+                scriptFolder = folder
+                print("📁 Created scriptfolder in workspace")
+            else
+                print("❌ Failed to create scriptfolder:", folder)
+                return nil
+            end
+        end
+    end
+    
+    return scriptFolder
+end
+
+local function cleanupScriptFolder()
+    if scriptFolder then
+        local success = pcall(function()
+            scriptFolder:Destroy()
+        end)
+        
+        if success then
+            scriptFolder = nil
+            print("🧹 Cleaned up scriptfolder")
+        else
+            print("❌ Failed to cleanup scriptfolder")
+        end
+    end
+end
+
 local function nodefecth()
     -- nodefecth but for this library, funny i know right?
     print("╭─────────────────────────────────────────────────────────────╮")
@@ -277,9 +323,74 @@ function manager.nodefecth()
     return nodefecth()
 end
 
+-- ScriptFolder Management Functions
+function manager.getScriptFolder()
+    return getScriptFolder()
+end
+
+function manager.cleanupScriptFolder()
+    return cleanupScriptFolder()
+end
+
+function manager.listScriptFolderContents()
+    local scriptFolder = getScriptFolder()
+    if not scriptFolder then
+        return "scriptfolder not found"
+    end
+    
+    local contents = {}
+    for _, child in pairs(scriptFolder:GetChildren()) do
+        table.insert(contents, {
+            name = child.Name,
+            type = child.ClassName,
+            children = child:GetChildren()
+        })
+    end
+    
+    return contents
+end
+
+function manager.createScriptFolderStructure()
+    local scriptFolder = getScriptFolder()
+    if not scriptFolder then
+        return "failed to create scriptfolder"
+    end
+    
+    local subFolders = {
+        "Audio",           -- Audio files and sounds
+        "GUIs",           -- GUI elements
+        "Media",          -- Media files
+        "Config",         -- Configuration
+        "Logs",           -- Log files
+        "Temp"            -- Temporary files
+    }
+    
+    local created = 0
+    for _, folderName in ipairs(subFolders) do
+        if not scriptFolder:FindFirstChild(folderName) then
+            local success = pcall(function()
+                local folder = Instance.new("Folder")
+                folder.Name = folderName
+                folder.Parent = scriptFolder
+                return folder
+            end)
+            
+            if success then
+                created = created + 1
+                print("📁 Created subfolder: " .. folderName)
+            end
+        end
+    end
+    
+    return "created " .. created .. " subfolders in scriptfolder"
+end
+
 -- Auto-run nodefecth when library loads
 print("🔧 Local Manager Library - Running system diagnostics...")
 nodefecth()
+
+-- Initialize scriptfolder structure
+manager.createScriptFolderStructure()
 
 function manager.new(path, data)
     if not path then
@@ -484,7 +595,21 @@ function manager.media(path, type, typeofmedia, isfolder, folder)
                         local sound = Instance.new("Sound")
                         sound.Name = "Audio_" .. i .. "_" .. fileName
                         sound.SoundId = assetOrErr
-                        sound.Parent = game.Workspace
+                        
+                        -- Put sound in scriptfolder instead of workspace
+                        local scriptFolder = getScriptFolder()
+                        if scriptFolder then
+                            local audioFolder = scriptFolder:FindFirstChild("Audio")
+                            if not audioFolder then
+                                audioFolder = Instance.new("Folder")
+                                audioFolder.Name = "Audio"
+                                audioFolder.Parent = scriptFolder
+                            end
+                            sound.Parent = audioFolder
+                        else
+                            sound.Parent = game.Workspace -- Fallback to workspace
+                        end
+                        
                         sound.Volume = 0.5 -- Set reasonable volume
                         sound:Play()
                         
@@ -525,7 +650,21 @@ function manager.media(path, type, typeofmedia, isfolder, folder)
                 sound = Instance.new("Sound")
                 sound.Name = "Audio_" .. path:match("([^/\\]+)$") -- Use filename as sound name
                 sound.SoundId = assetOrErr
-                sound.Parent = game.Workspace
+                
+                -- Put sound in scriptfolder instead of workspace
+                local scriptFolder = getScriptFolder()
+                if scriptFolder then
+                    local audioFolder = scriptFolder:FindFirstChild("Audio")
+                    if not audioFolder then
+                        audioFolder = Instance.new("Folder")
+                        audioFolder.Name = "Audio"
+                        audioFolder.Parent = scriptFolder
+                    end
+                    sound.Parent = audioFolder
+                else
+                    sound.Parent = game.Workspace -- Fallback to workspace
+                end
+                
                 sound.Volume = 0.5 -- Set reasonable volume
                 sound:Play()
                 
@@ -635,6 +774,23 @@ function manager._htmlToGuiInternal(htmlContent, parentGui)
         screenGui.Name = "HTMLToGui_" .. tick()
         screenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
         parentGui = screenGui
+        
+        -- Also add to scriptfolder for organization
+        local scriptFolder = getScriptFolder()
+        if scriptFolder then
+            local guiFolder = scriptFolder:FindFirstChild("GUIs")
+            if not guiFolder then
+                guiFolder = Instance.new("Folder")
+                guiFolder.Name = "GUIs"
+                guiFolder.Parent = scriptFolder
+            end
+            
+            -- Create a reference in the scriptfolder
+            local guiRef = Instance.new("StringValue")
+            guiRef.Name = screenGui.Name
+            guiRef.Value = "ScreenGui Reference"
+            guiRef.Parent = guiFolder
+        end
     end
     
     -- Simple HTML parser (basic implementation)
