@@ -145,6 +145,73 @@ local result = manager.dfile("config.json", true, "config.json.undo")
 -- Returns: "file restored successfully from undo backup"
 ```
 
+### `manager.saveas(path, content, type)`
+
+Saves content as a specific type of instance (Sound, Model, etc.) in the game environment.
+
+**Signature:**
+```lua
+function manager.saveas(path: string, content: string, type: string): string
+```
+
+**Parameters:**
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `path` | `string` | ✅ | File path where to save the instance |
+| `content` | `string` | ✅ | Content to save (binary/text data) |
+| `type` | `string` | ✅ | Type of instance to create ("Sound", "Model", "Script", "Image") |
+
+**Returns:**
+| Type | Description |
+|------|-------------|
+| `string` | Success message or error description |
+
+**Supported Types:**
+- `"Sound"` - Creates a Sound instance (fully implemented)
+- `"Model"` - Reserved for future implementation
+- `"Script"` - Reserved for future implementation
+- `"Image"` - Reserved for future implementation
+
+**Success Messages:**
+- `"file saved successfully as Sound"` - When Sound instance is created and saved
+
+**Error Messages:**
+- `"cannot save file, did you forget to add path?"` - When `path` is nil or empty
+- `"cannot save file without content"` - When `content` is nil or empty
+- `"cannot save file without type specification"` - When `type` is nil or empty
+- `"unsupported save type: [type]"` - When type is not in supported types list
+- `"file already exists at path: [path]"` - When target file already exists
+- `"failed to save Sound file: [details]"` - When Sound creation/saving fails
+- `"save type '[type]' is recognized but not yet implemented"` - When using a reserved type
+
+**Example - Save Sound File:**
+```lua
+-- Read an audio file
+local audioData = readfile("audio.mp3")
+
+-- Save it as a Sound instance
+local result = manager.saveas("sounds/music.mp3", audioData, "Sound")
+-- Returns: "file saved successfully as Sound"
+```
+
+**Example - Error Handling:**
+```lua
+-- Try to save with unsupported type
+local result = manager.saveas("test.txt", "content", "InvalidType")
+-- Returns: "unsupported save type: InvalidType. Supported types: Sound, Model, Script, Image"
+
+-- Try to save to existing file
+local result = manager.saveas("existing.mp3", audioData, "Sound")
+-- Returns: "file already exists at path: existing.mp3"
+```
+
+**Implementation Notes:**
+- Sound instances are created using `Instance.new("Sound")`
+- Custom assets are created using `getcustomasset`
+- Files are written using `writecustomasset` (if available) or `writefile`
+- The function uses nested `pcall` blocks for comprehensive error handling
+- Future type implementations will follow the same pattern but with type-specific logic
+
 ---
 
 ## HTTP Operations
@@ -578,6 +645,18 @@ end
 | `"file not found"` | File doesn't exist | Check file path and existence |
 | `"failed to [operation]"` | Operation failed due to permissions or system limitations | Check executor permissions |
 | `"cannot find url"` | URL is invalid or unreachable | Check URL validity and network connectivity |
+
+### Save Operation Errors
+
+| Error Pattern | Cause | Solution |
+|---------------|-------|----------|
+| `"cannot save file, did you forget to add path?"` | Missing file path | Provide a valid file path |
+| `"cannot save file without content"` | Missing content | Provide content to save |
+| `"cannot save file without type specification"` | Missing type parameter | Specify a supported type (e.g., "Sound") |
+| `"unsupported save type: [type]"` | Invalid type specified | Use one of: Sound, Model, Script, Image |
+| `"file already exists at path: [path]"` | Target file exists | Use a different path or delete existing file |
+| `"failed to save Sound file: [details]"` | Sound creation failed | Check file format and executor capabilities |
+| `"save type '[type]' is recognized but not yet implemented"` | Using reserved type | Only use fully implemented types (currently "Sound") |
 
 ### Error Handling Best Practices
 
