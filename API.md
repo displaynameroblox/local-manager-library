@@ -394,11 +394,9 @@ end
 - **Language:** Luau (Roblox Lua)
 
 ### Tested Executors
-- Script-Ware ✅
+- Wave ✅
 - Krnl ✅
-- Synapse X ✅
-- Fluxus ✅
-- JJSploit ✅
+- Hydrogen ✅
 
 ---
 
