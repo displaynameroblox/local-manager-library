@@ -652,7 +652,22 @@ function manager.media(path, type, typeofmedia, isfolder, folder)
     end
 
     if typeofmedia == "video" then
-
+        -- alright i dont know to handle videos, they are the same as audios but with video instance right?
+        -- no error hadling for videos yet, this is experimental
+        if path then
+            local readsuccess, mediacontent = pcall(function()
+                local data = readfile(path)
+                return data
+            end)
+            if readsuccess then
+                local video = instance.new("VideoFrame")
+                video.Name = "Video_" .. path:match("([^/\\]+)$") -- Use filename as video name
+                video.Video = getcustomasset(path)
+                return video
+            else
+                return "failed to read media file, keep in mind this is still experimental"
+            end
+        end
     end
 
     if typeofmedia == "audio" then
