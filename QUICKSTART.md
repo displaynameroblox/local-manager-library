@@ -106,11 +106,20 @@ manager.new("interface.html", htmlContent)
 manager.html(nil, true, "interface.html", true)
 ```
 
-### 5. Play Audio Files
+### 5. Play Media Files
 
 ```lua
 -- Play single audio file (organized in scriptfolder/Audio/)
-manager.media("song.mp3", "audio", "audio", false)
+local result, soundInstance = manager.media("song.mp3", "audio", "audio", false)
+if soundInstance then
+    soundInstance.Volume = 0.7 -- Control the sound
+end
+
+-- Play single video file (EXPERIMENTAL - organized in scriptfolder/VideoGui/)
+local result, videoInstance = manager.media("video.mp4", "video", "video", false)
+if videoInstance then
+    videoInstance.Size = UDim2.new(0, 600, 0, 400) -- Resize video
+end
 
 -- Play all audio files in a folder (organized in scriptfolder/Audio/)
 manager.media(nil, "audio", "audio", true, "music")

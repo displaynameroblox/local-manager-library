@@ -175,6 +175,48 @@ Creates a sample HTML GUI to demonstrate the conversion functionality.
 manager.createSampleHtmlGui() -- Creates a sample GUI with buttons, inputs, etc.
 ```
 
+### Media Operations
+
+#### `manager.media(path, type, typeofmedia, isfolder, folder)`
+Handles media files including audio and video playback.
+
+**Parameters:**
+- `path` (string, optional) - File path (ignored when `isfolder` is true)
+- `type` (string) - Media type category
+- `typeofmedia` (string) - Specific media type ("audio", "video", "image", "document")
+- `isfolder` (boolean, optional) - Whether to process a folder of files
+- `folder` (string, optional) - Folder path (required when `isfolder` is true)
+
+**Returns:**
+- `string` - Success message, error description, or file content
+- `Instance?` - Media instance (Sound for audio, VideoFrame for video) - second return value
+
+**Example - Audio Playback:**
+```lua
+local result, soundInstance = manager.media("song.mp3", "audio", "audio", false)
+if soundInstance then
+    soundInstance.Volume = 0.7 -- Control the sound
+    soundInstance:Pause() -- Pause playback
+    soundInstance:Resume() -- Resume playback
+end
+```
+
+**Example - Video Playback (EXPERIMENTAL):**
+```lua
+local result, videoInstance = manager.media("video.mp4", "video", "video", false)
+if videoInstance then
+    videoInstance.Size = UDim2.new(0, 600, 0, 400) -- Resize video
+    videoInstance:Pause() -- Pause video
+    videoInstance:Resume() -- Resume video
+end
+```
+
+**Example - Folder Audio Playback:**
+```lua
+local result = manager.media(nil, "audio", "audio", true, "music")
+-- Plays all audio files in the "music" folder
+```
+
 ### ScriptFolder Management
 
 #### `manager.getScriptFolder()`

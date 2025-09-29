@@ -287,7 +287,7 @@ Handles media files including audio playback for single files or entire folders.
 
 **Signature:**
 ```lua
-function manager.media(path: string?, type: string, typeofmedia: string, isfolder: boolean?, folder: string?): string
+function manager.media(path: string?, type: string, typeofmedia: string, isfolder: boolean?, folder: string?): (string, Instance?)
 ```
 
 **Parameters:**
@@ -303,6 +303,7 @@ function manager.media(path: string?, type: string, typeofmedia: string, isfolde
 | Type | Description |
 |------|-------------|
 | `string` | Success message, error description, or file content |
+| `Instance?` | Media instance (Sound for audio, VideoFrame for video) - second return value |
 
 **Supported Media Types:**
 - `"audio"` - Audio files (.mp3, .wav, .ogg, .m4a, .aac)
@@ -333,14 +334,34 @@ function manager.media(path: string?, type: string, typeofmedia: string, isfolde
 
 **Example - Single Audio File:**
 ```lua
-local result = manager.media("song.mp3", "audio", "audio", false)
--- Returns: "media played successfully"
+local result, soundInstance = manager.media("song.mp3", "audio", "audio", false)
+-- Returns: "media played successfully", soundInstance
+-- soundInstance is a Sound object that you can control
+
+-- Control the sound instance
+if soundInstance then
+    soundInstance.Volume = 0.8
+    soundInstance.Pitch = 1.2
+    soundInstance:Pause()
+    soundInstance:Resume()
+    soundInstance:Stop()
+end
 ```
 
 **Example - Single Video File (EXPERIMENTAL):**
 ```lua
-local result = manager.media("video.mp4", "video", "video", false)
--- Returns: "video played successfully" (EXPERIMENTAL - this is still experimental you may see errors)
+local result, videoInstance = manager.media("video.mp4", "video", "video", false)
+-- Returns: "video played successfully", videoInstance (EXPERIMENTAL - this is still experimental you may see errors)
+-- videoInstance is a VideoFrame object that you can control
+
+-- Control the video instance
+if videoInstance then
+    videoInstance.Size = UDim2.new(0, 800, 0, 600) -- Resize video
+    videoInstance.Position = UDim2.new(0, 100, 0, 100) -- Reposition video
+    videoInstance:Pause()
+    videoInstance:Resume()
+    videoInstance:Stop()
+end
 ```
 
 **Example - Folder Audio Playback:**
