@@ -306,21 +306,23 @@ function manager.media(path: string?, type: string, typeofmedia: string, isfolde
 
 **Supported Media Types:**
 - `"audio"` - Audio files (.mp3, .wav, .ogg, .m4a, .aac)
-- `"video"` - Video files (not yet supported)
+- `"video"` - Video files (**EXPERIMENTAL** - this is still experimental you may see errors)
 - `"image"` - Image files (returns content)
 - `"document"` - Document files (returns content)
 
 **Success Messages:**
 - `"media played successfully"` - Single audio file played
+- `"video played successfully"` - Single video file played (**EXPERIMENTAL**)
 - `"played X/Y audio files from folder successfully"` - Folder playback results
-- Returns file content for non-audio media types
+- Returns file content for non-audio/video media types
 
 **Error Messages:**
 - `"cannot handle media, did you forget to add path?"` - When `path` is nil or empty
 - `"cannot handle media, did you forget to add type?"` - When `type` is nil or empty
 - `"cannot handle media, did you forget to add typeofmedia?"` - When `typeofmedia` is nil or empty
 - `"invalid media type"` - When `typeofmedia` is not supported
-- `"videos are not supported yet"` - When trying to play video files
+- `"failed to read video file"` - When video file cannot be read (**EXPERIMENTAL**)
+- `"failed to play video"` - When video playback fails (**EXPERIMENTAL**)
 - `"cannot handle media folder, did you forget to add folder path?"` - When folder path is missing
 - `"folder not found: [folder]"` - When specified folder doesn't exist
 - `"failed to list files in folder"` - When folder access fails
@@ -333,6 +335,12 @@ function manager.media(path: string?, type: string, typeofmedia: string, isfolde
 ```lua
 local result = manager.media("song.mp3", "audio", "audio", false)
 -- Returns: "media played successfully"
+```
+
+**Example - Single Video File (EXPERIMENTAL):**
+```lua
+local result = manager.media("video.mp4", "video", "video", false)
+-- Returns: "video played successfully" (EXPERIMENTAL - this is still experimental you may see errors)
 ```
 
 **Example - Folder Audio Playback:**

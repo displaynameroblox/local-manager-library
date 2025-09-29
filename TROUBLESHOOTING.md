@@ -101,7 +101,8 @@ end
 | `ERR_MEDIA_TYPE_MISSING` | Cannot handle media, did you forget to add type? | Missing type parameter | Provide media type |
 | `ERR_MEDIA_TYPEOF_MISSING` | Cannot handle media, did you forget to add typeofmedia? | Missing typeofmedia parameter | Provide specific media type |
 | `ERR_MEDIA_INVALID_TYPE` | Invalid media type | Unsupported media type | Use "audio", "video", "image", or "document" |
-| `ERR_MEDIA_VIDEO_UNSUPPORTED` | Videos are not supported yet | Trying to play video files | Use audio files instead |
+| `ERR_MEDIA_VIDEO_READ_FAILED` | Failed to read video file | Video file corruption, permission issues (**EXPERIMENTAL**) | Check video file integrity and permissions |
+| `ERR_MEDIA_VIDEO_PLAY_FAILED` | Failed to play video | Video format issues, VideoFrame creation failed (**EXPERIMENTAL**) | Check video file format and Roblox VideoFrame support |
 | `ERR_MEDIA_FOLDER_PATH_MISSING` | Cannot handle media folder, did you forget to add folder path? | Missing folder path for folder mode | Provide folder path |
 | `ERR_MEDIA_FOLDER_NOT_FOUND` | Folder not found: [folder] | Specified folder doesn't exist | Check folder path and existence |
 | `ERR_MEDIA_FOLDER_LIST_FAILED` | Failed to list files in folder | Folder access permission issues | Check folder permissions |
@@ -838,6 +839,103 @@ end
    ```lua
    -- Try with a basic audio file first
    manager.media("simple.mp3", "audio", "audio", false)
+   ```
+
+### Issue: "Failed to read video file" (EXPERIMENTAL)
+
+**Symptoms:**
+- Video file exists but cannot be read
+- Function returns "failed to read video file"
+
+**Diagnosis:**
+```lua
+-- Check video file accessibility
+local videoPath = "video.mp4"
+local fileExists = isfile(videoPath)
+
+if fileExists then
+    print("✅ Video file exists:", videoPath)
+    
+    -- Test file read access
+    local readSuccess, content = pcall(function()
+        return readfile(videoPath)
+    end)
+    
+    if readSuccess then
+        print("✅ Video file readable, size:", #content)
+    else
+        print("❌ Video file read failed:", content)
+    end
+else
+    print("❌ Video file not found:", videoPath)
+end
+```
+
+**Solutions:**
+1. **Check video file format:**
+   ```lua
+   -- Ensure video file is in supported format
+   -- Test with a known working video file first
+   ```
+
+2. **Check file permissions:**
+   ```lua
+   -- Verify file is not corrupted or locked
+   local success, content = pcall(function()
+       return readfile("video.mp4")
+   end)
+   ```
+
+3. **Note: This is experimental - errors are expected**
+
+### Issue: "Failed to play video" (EXPERIMENTAL)
+
+**Symptoms:**
+- Video file reads successfully but playback fails
+- Function returns "failed to play video"
+
+**Diagnosis:**
+```lua
+-- Test VideoFrame creation
+local success, video = pcall(function()
+    local videoFrame = Instance.new("VideoFrame")
+    videoFrame:Destroy()
+    return true
+end)
+
+if success then
+    print("✅ VideoFrame creation supported")
+else
+    print("❌ VideoFrame creation not supported:", video)
+end
+
+-- Test Roblox environment
+if game and game.Workspace then
+    print("✅ Valid Roblox environment for video")
+else
+    print("❌ Invalid environment for video playback")
+end
+```
+
+**Solutions:**
+1. **Check Roblox VideoFrame support:**
+   ```lua
+   -- VideoFrame is a Roblox feature that may not be available in all environments
+   if game and game.Workspace then
+       print("✅ Roblox environment available")
+   end
+   ```
+
+2. **Check video file format:**
+   ```lua
+   -- Ensure video is in a format supported by Roblox VideoFrame
+   -- Common formats: .mp4, .webm
+   ```
+
+3. **Note: This is experimental - errors are expected**
+   ```lua
+   -- Video handling is still experimental and may have issues
+   -- Consider using audio files for more reliable playback
    ```
 
 ---
