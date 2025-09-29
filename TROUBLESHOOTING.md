@@ -86,9 +86,10 @@ end
 | `ERR_HTML_PATH_MISSING` | Cannot handle html, did you forget to add path? | Missing path parameter | Provide file path |
 | `ERR_HTML_PARAMS_MISSING` | I won't classify that you are a programmer, put the url and the path, and say if it local or not | Missing required parameters | Provide URL/path and islocal parameter |
 | `ERR_HTML_FILE_NOT_FOUND` | File not found, did you type the path wrong? | Local file doesn't exist | Check file path and existence |
-| `ERR_HTML_READ_FAILED` | Failed to read local HTML file | File corruption, permission issues | Check file integrity |
+| `ERR_HTML_READ_FAILED` | Failed to read local file | File corruption, permission issues | Check file integrity |
 | `ERR_HTML_URL_MISSING` | Cannot find url, did you forget to add url? | Missing URL for online mode | Provide valid URL |
-| `ERR_HTML_DOWNLOAD_FAILED` | Failed to load HTML from URL: [url] | Network issues, invalid URL | Check internet and URL |
+| `ERR_HTML_DOWNLOAD_FAILED` | Cannot find url, or it's offline | Network issues, invalid URL | Check internet and URL |
+| `ERR_HTML_EMPTY_RESPONSE` | Received empty response from server | Server returns empty content | Check server status and URL |
 | `ERR_HTML_NO_CONTENT` | No HTML content available | Empty response or file | Check source content |
 | `ERR_HTML_CONVERSION_FAILED` | Failed to convert HTML to GUI | HTML parsing error, GUI creation failed | Check HTML syntax and GUI permissions |
 
@@ -105,9 +106,16 @@ end
 | `ERR_MEDIA_FOLDER_NOT_FOUND` | Folder not found: [folder] | Specified folder doesn't exist | Check folder path and existence |
 | `ERR_MEDIA_FOLDER_LIST_FAILED` | Failed to list files in folder | Folder access permission issues | Check folder permissions |
 | `ERR_MEDIA_NO_AUDIO_FILES` | No audio files found in folder | Folder contains no audio files | Add audio files (.mp3, .wav, .ogg, .m4a, .aac) |
-| `ERR_MEDIA_READ_FAILED` | Failed to read media file | File corruption, permission issues | Check file integrity and permissions |
+| `ERR_MEDIA_READ_FAILED` | Failed to read media file, keep in mind this is still experimental | File corruption, permission issues | Check file integrity and permissions |
 | `ERR_MEDIA_ASSET_FAILED` | Failed to get custom asset for audio | Audio file format issues | Check audio file format and integrity |
 | `ERR_MEDIA_PLAY_FAILED` | Failed to play audio | Audio system issues | Check Roblox audio system and file format |
+| `ERR_MEDIA_SOUND_CHECK_FAILED` | Failed to check sound: [error] | Sound validation error | Check audio file integrity and format |
+
+### ScriptFolder Management Error Codes
+
+| Error Code | Description | Common Causes | Solution |
+|------------|-------------|---------------|----------|
+| `ERR_SCRIPTFOLDER_CREATE_FAILED` | Failed to create scriptfolder | Workspace access denied, GUI creation not supported | Check executor GUI permissions and Roblox environment |
 
 ### File Deletion Error Codes
 
