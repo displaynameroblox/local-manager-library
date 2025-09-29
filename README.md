@@ -218,11 +218,9 @@ The library supports converting these HTML elements to Roblox GUI:
 - **GUI Access** - `Instance.new`, `Drawing.new` (optional)
 
 ### Recommended Executors
-- Script-Ware
+- Wave
 - Krnl
-- Synapse X
-- Fluxus
-- JJSploit
+- Hydrogen
 
 ## 📝 Usage Examples
 
