@@ -648,4 +648,4 @@ When reporting issues, include:
 
 ---
 
-*Last updated: 2024*
+*Last updated: 2025*
