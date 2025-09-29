@@ -216,10 +216,8 @@ local result = manager.saveas("existing.mp3", audioData, "Sound")
 
 **Implementation Notes:**
 - ⚠️ EXPERIMENTAL IMPLEMENTATION
-- Sound instances are created using `Instance.new("Sound")` (executor-dependent)
 - Custom assets are created using `getcustomasset` (may not work on all executors)
 - Files are written using `writecustomasset` (if available) or falls back to `writefile`
-- The function uses nested `pcall` blocks for comprehensive error handling
 - Future type implementations will follow the same pattern but with type-specific logic
 - Current implementation may have unexpected behavior or limitations
 
