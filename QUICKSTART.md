@@ -26,6 +26,10 @@ local manager = loadstring(game:HttpGet("https://raw.githubusercontent.com/displ
 -- Create your first file
 local result = manager.new("my_first_file.txt", "Hello, Local Manager!")
 print(result) -- Should print: "file created successfully"
+
+-- Delete a file safely with undo
+local result = manager.dfile("my_first_file.txt", false)
+print(result) -- Should print: "file deleted successfully, undo backup created at: my_first_file.txt.undo"
 ```
 
 ### Step 3: Download Something from the Internet
@@ -39,8 +43,14 @@ print(result) -- Should print: "file downloaded successfully"
 ### Step 4: Create a Simple GUI
 
 ```lua
--- Create a simple HTML GUI
+-- Create a simple HTML GUI (organized in scriptfolder)
 manager.createSampleHtmlGui()
+
+-- Check what's in your scriptfolder
+local contents = manager.listScriptFolderContents()
+for _, item in ipairs(contents) do
+    print("Found:", item.name, "Type:", item.type)
+end
 ```
 
 ## 🎯 Common Use Cases
@@ -57,11 +67,14 @@ local config = {
 manager.new("config.json", game:GetService("HttpService"):JSONEncode(config))
 ```
 
-### 2. Backup Important Files
+### 2. Safe File Deletion with Undo
 
 ```lua
--- Backup your config
-manager.move("config.json", "backups/config_backup_" .. os.time() .. ".json")
+-- Delete a file safely with automatic backup
+manager.dfile("config.json", false) -- Creates config.json.undo
+
+-- Later, restore it if needed
+manager.dfile("config.json", true, "config.json.undo")
 ```
 
 ### 3. Download and Use Data
@@ -79,7 +92,7 @@ print("User level:", decoded.level)
 ### 4. Create Custom Interfaces
 
 ```lua
--- Create a custom HTML interface
+-- Create a custom HTML interface (organized in scriptfolder)
 local htmlContent = [[
     <div style="background-color: rgb(20, 20, 20); width: 400; height: 300;">
         <h1 style="color: white;">My Custom Interface</h1>
@@ -88,9 +101,19 @@ local htmlContent = [[
     </div>
 ]]
 
--- Save and convert to GUI
+-- Save and convert to GUI (GUI references stored in scriptfolder/GUIs/)
 manager.new("interface.html", htmlContent)
 manager.html(nil, true, "interface.html", true)
+```
+
+### 5. Play Audio Files
+
+```lua
+-- Play single audio file (organized in scriptfolder/Audio/)
+manager.media("song.mp3", "audio", "audio", false)
+
+-- Play all audio files in a folder (organized in scriptfolder/Audio/)
+manager.media(nil, "audio", "audio", true, "music")
 ```
 
 ## 🔧 System Check
@@ -159,8 +182,11 @@ You now know the basics of the Local Manager Library. Start building amazing thi
 |----------|-------------|---------|
 | `manager.new()` | Create a file | `manager.new("file.txt", "content")` |
 | `manager.move()` | Move a file | `manager.move("old.txt", "new.txt")` |
+| `manager.dfile()` | Delete file with undo | `manager.dfile("file.txt", false)` |
 | `manager.download()` | Download from URL | `manager.download("https://example.com/file.txt", "local.txt", "GET")` |
 | `manager.html()` | Load HTML or convert to GUI | `manager.html(nil, true, "page.html", true)` |
+| `manager.media()` | Play audio files | `manager.media("song.mp3", "audio", "audio", false)` |
+| `manager.getScriptFolder()` | Get scriptfolder | `manager.getScriptFolder()` |
 | `manager.nodefecth()` | Check system capabilities | `manager.nodefecth()` |
 
 ---

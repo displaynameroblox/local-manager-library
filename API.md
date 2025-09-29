@@ -8,6 +8,7 @@ Complete API reference for the Local Manager Library.
 - [HTTP Operations](#http-operations)
 - [HTML to GUI Conversion](#html-to-gui-conversion)
 - [Media Operations](#media-operations)
+- [ScriptFolder Management](#scriptfolder-management)
 - [System Diagnostics](#system-diagnostics)
 - [Error Codes](#error-codes)
 - [Data Types](#data-types)
@@ -88,6 +89,60 @@ function manager.move(path: string, newpath: string): string
 ```lua
 local result = manager.move("old.txt", "new.txt")
 -- Returns: "file moved successfully"
+```
+
+### `manager.dfile(path, isundo, undofile)`
+
+Deletes files with undo functionality or restores files from backup.
+
+**Signature:**
+```lua
+function manager.dfile(path: string, isundo: boolean, undofile: string?): string
+```
+
+**Parameters:**
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `path` | `string` | ✅ | Path of the file to delete/restore |
+| `isundo` | `boolean` | ✅ | If true, restores file; if false, deletes file |
+| `undofile` | `string` | ❌ | Path for undo backup file (auto-generated if not provided) |
+
+**Returns:**
+| Type | Description |
+|------|-------------|
+| `string` | Success message or error description |
+
+**Success Messages:**
+- `"file deleted successfully, undo backup created at: [path]"` - File deleted with backup
+- `"file restored successfully from undo backup"` - File restored from backup
+
+**Error Messages:**
+- `"cannot delete file, did you forget to add path?"` - Missing file path
+- `"cannot undo file deletion, did you forget to add undo file path?"` - Missing undo file path
+- `"file not found: [path]"` - File doesn't exist
+- `"undo file not found: [path]"` - Undo backup doesn't exist
+- `"failed to read file: [error]"` - File read error
+- `"failed to read undo file: [error]"` - Undo file read error
+- `"failed to create undo backup: [error]"` - Backup creation error
+- `"failed to delete file: [error]"` - File deletion error
+- `"failed to restore file: [error]"` - File restoration error
+
+**Example - Delete File with Auto Backup:**
+```lua
+local result = manager.dfile("config.json", false)
+-- Returns: "file deleted successfully, undo backup created at: config.json.undo"
+```
+
+**Example - Delete File with Custom Backup:**
+```lua
+local result = manager.dfile("data.txt", false, "backups/data_backup.txt")
+-- Returns: "file deleted successfully, undo backup created at: backups/data_backup.txt"
+```
+
+**Example - Restore File:**
+```lua
+local result = manager.dfile("config.json", true, "config.json.undo")
+-- Returns: "file restored successfully from undo backup"
 ```
 
 ---
@@ -295,6 +350,112 @@ local result = manager.media("image.png", "image", "image", false)
 ```lua
 local result = manager.media("document.txt", "document", "document", false)
 -- Returns: Text content of the document
+```
+
+---
+
+## ScriptFolder Management
+
+### `manager.getScriptFolder()`
+
+Gets or creates the scriptfolder in the workspace for organizing Roblox objects.
+
+**Signature:**
+```lua
+function manager.getScriptFolder(): Instance?
+```
+
+**Parameters:** None
+
+**Returns:**
+| Type | Description |
+|------|-------------|
+| `Instance` | The scriptfolder instance or nil if creation failed |
+
+**Example:**
+```lua
+local scriptFolder = manager.getScriptFolder()
+if scriptFolder then
+    print("ScriptFolder found:", scriptFolder.Name)
+end
+```
+
+---
+
+### `manager.cleanupScriptFolder()`
+
+Destroys the entire scriptfolder and all its contents.
+
+**Signature:**
+```lua
+function manager.cleanupScriptFolder(): ()
+```
+
+**Parameters:** None
+
+**Returns:** None (prints cleanup status)
+
+**Example:**
+```lua
+manager.cleanupScriptFolder() -- Prints: "🧹 Cleaned up scriptfolder"
+```
+
+---
+
+### `manager.listScriptFolderContents()`
+
+Lists all contents in the scriptfolder with detailed information.
+
+**Signature:**
+```lua
+function manager.listScriptFolderContents(): table
+```
+
+**Parameters:** None
+
+**Returns:**
+| Type | Description |
+|------|-------------|
+| `table` | Array of objects with name, type, and children information |
+
+**Example:**
+```lua
+local contents = manager.listScriptFolderContents()
+for _, item in ipairs(contents) do
+    print("Found:", item.name, "Type:", item.type)
+end
+```
+
+---
+
+### `manager.createScriptFolderStructure()`
+
+Creates the organized subfolder structure within the scriptfolder.
+
+**Signature:**
+```lua
+function manager.createScriptFolderStructure(): string
+```
+
+**Parameters:** None
+
+**Returns:**
+| Type | Description |
+|------|-------------|
+| `string` | Success message with count of created folders |
+
+**Creates Subfolders:**
+- `Audio` - Audio files and sounds
+- `GUIs` - GUI elements
+- `Media` - Media files
+- `Config` - Configuration
+- `Logs` - Log files
+- `Temp` - Temporary files
+
+**Example:**
+```lua
+local result = manager.createScriptFolderStructure()
+-- Returns: "created 6 subfolders in scriptfolder"
 ```
 
 ---

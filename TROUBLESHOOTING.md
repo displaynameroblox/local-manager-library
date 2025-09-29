@@ -7,6 +7,7 @@ Complete troubleshooting guide for resolving issues with the Local Manager Libra
 - [Quick Diagnostics](#quick-diagnostics)
 - [Error Codes Reference](#error-codes-reference)
 - [File Operations Issues](#file-operations-issues)
+- [File Deletion Issues](#file-deletion-issues)
 - [HTTP/Network Issues](#httpnetwork-issues)
 - [HTML to GUI Issues](#html-to-gui-issues)
 - [Media Operations Issues](#media-operations-issues)
@@ -107,6 +108,20 @@ end
 | `ERR_MEDIA_READ_FAILED` | Failed to read media file | File corruption, permission issues | Check file integrity and permissions |
 | `ERR_MEDIA_ASSET_FAILED` | Failed to get custom asset for audio | Audio file format issues | Check audio file format and integrity |
 | `ERR_MEDIA_PLAY_FAILED` | Failed to play audio | Audio system issues | Check Roblox audio system and file format |
+
+### File Deletion Error Codes
+
+| Error Code | Description | Common Causes | Solution |
+|------------|-------------|---------------|----------|
+| `ERR_DFILE_PATH_MISSING` | Cannot delete file, did you forget to add path? | Missing file path parameter | Provide file path |
+| `ERR_DFILE_UNDO_PATH_MISSING` | Cannot undo file deletion, did you forget to add undo file path? | Missing undo file path for restore | Provide undo file path |
+| `ERR_DFILE_NOT_FOUND` | File not found: [path] | File doesn't exist | Check file path and existence |
+| `ERR_DFILE_UNDO_NOT_FOUND` | Undo file not found: [path] | Undo backup doesn't exist | Check undo file path |
+| `ERR_DFILE_READ_FAILED` | Failed to read file: [error] | File read error | Check file permissions and integrity |
+| `ERR_DFILE_UNDO_READ_FAILED` | Failed to read undo file: [error] | Undo file read error | Check undo file permissions |
+| `ERR_DFILE_BACKUP_FAILED` | Failed to create undo backup: [error] | Backup creation error | Check disk space and permissions |
+| `ERR_DFILE_DELETE_FAILED` | Failed to delete file: [error] | File deletion error | Check file permissions and locks |
+| `ERR_DFILE_RESTORE_FAILED` | Failed to restore file: [error] | File restoration error | Check write permissions |
 
 ---
 
@@ -367,6 +382,220 @@ end
            <h1 style="color: white;">Title</h1>
        </div>
    ]]
+   ```
+
+---
+
+## 🗑️ File Deletion Issues
+
+### Issue: "Cannot delete file, did you forget to add path?"
+
+**Symptoms:**
+- Function returns error about missing path parameter
+- No file deletion occurs
+
+**Diagnosis:**
+```lua
+-- Check if path is provided
+local path = "file.txt"  -- Make sure this is not nil or empty
+
+if not path or path == "" then
+    print("❌ Path is missing or empty")
+else
+    print("✅ Path is valid:", path)
+end
+```
+
+**Solutions:**
+1. **Provide file path:**
+   ```lua
+   manager.dfile("config.json", false)  -- ✅ Correct
+   manager.dfile("", false)             -- ❌ Empty path
+   manager.dfile(nil, false)            -- ❌ Nil path
+   ```
+
+2. **Check file existence:**
+   ```lua
+   if isfile("config.json") then
+       manager.dfile("config.json", false)
+   else
+       print("File doesn't exist")
+   end
+   ```
+
+### Issue: "File not found: [path]"
+
+**Symptoms:**
+- Function returns file not found error
+- Deletion fails
+
+**Diagnosis:**
+```lua
+-- Check if file exists
+local path = "config.json"
+local fileExists = isfile(path)
+
+if fileExists then
+    print("✅ File exists:", path)
+else
+    print("❌ File not found:", path)
+end
+```
+
+**Solutions:**
+1. **Verify file path:**
+   ```lua
+   -- List files to find correct path
+   local files = listfiles(".")
+   for _, file in ipairs(files) do
+       print("Found file:", file)
+   end
+   ```
+
+2. **Check file permissions:**
+   ```lua
+   -- Test file access
+   local success, content = pcall(function()
+       return readfile("config.json")
+   end)
+   
+   if success then
+       print("✅ File is readable")
+   else
+       print("❌ File access denied:", content)
+   end
+   ```
+
+### Issue: "Failed to create undo backup: [error]"
+
+**Symptoms:**
+- File deletion fails due to backup creation error
+- No undo functionality available
+
+**Diagnosis:**
+```lua
+-- Test backup creation
+local testPath = "test_backup.txt"
+local success, error = pcall(function()
+    writefile(testPath, "test content")
+end)
+
+if success then
+    print("✅ Backup creation works")
+    -- Clean up test file
+    pcall(function() delfile(testPath) end)
+else
+    print("❌ Backup creation failed:", error)
+end
+```
+
+**Solutions:**
+1. **Check disk space:**
+   ```lua
+   -- Ensure sufficient disk space for backup
+   ```
+
+2. **Use custom backup path:**
+   ```lua
+   -- Specify backup location
+   manager.dfile("config.json", false, "backups/config_backup.json")
+   ```
+
+3. **Check write permissions:**
+   ```lua
+   -- Test write access to backup location
+   local testSuccess = pcall(function()
+       writefile("test_write.txt", "test")
+       delfile("test_write.txt")
+   end)
+   ```
+
+### Issue: "Undo file not found: [path]"
+
+**Symptoms:**
+- Undo operation fails
+- Error message shows missing undo file
+
+**Diagnosis:**
+```lua
+-- Check if undo file exists
+local undoPath = "config.json.undo"
+local undoExists = isfile(undoPath)
+
+if undoExists then
+    print("✅ Undo file exists:", undoPath)
+else
+    print("❌ Undo file not found:", undoPath)
+end
+```
+
+**Solutions:**
+1. **Verify undo file path:**
+   ```lua
+   -- List all .undo files
+   local files = listfiles(".")
+   for _, file in ipairs(files) do
+       if file:find("%.undo$") then
+           print("Found undo file:", file)
+       end
+   end
+   ```
+
+2. **Check backup location:**
+   ```lua
+   -- If using custom backup path, verify it exists
+   local backupPath = "backups/config_backup.json"
+   if isfile(backupPath) then
+       manager.dfile("config.json", true, backupPath)
+   end
+   ```
+
+### Issue: "Failed to restore file: [error]"
+
+**Symptoms:**
+- File restoration fails
+- Undo operation unsuccessful
+
+**Diagnosis:**
+```lua
+-- Test file restoration
+local undoPath = "config.json.undo"
+local targetPath = "config.json"
+
+-- Check undo file content
+local undoSuccess, undoData = pcall(function()
+    return readfile(undoPath)
+end)
+
+if undoSuccess then
+    print("✅ Undo file readable, size:", #undoData)
+else
+    print("❌ Undo file read failed:", undoData)
+end
+```
+
+**Solutions:**
+1. **Check write permissions:**
+   ```lua
+   -- Test write access to target location
+   local writeSuccess = pcall(function()
+       writefile("test_restore.txt", "test")
+       delfile("test_restore.txt")
+   end)
+   ```
+
+2. **Verify undo file integrity:**
+   ```lua
+   -- Check if undo file is corrupted
+   local success, content = pcall(function()
+       return readfile("config.json.undo")
+   end)
+   
+   if success and content and #content > 0 then
+       print("✅ Undo file is valid")
+   else
+       print("❌ Undo file is corrupted or empty")
+   end
    ```
 
 ---

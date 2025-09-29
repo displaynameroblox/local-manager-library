@@ -88,6 +88,28 @@ local result = manager.move("old.txt", "new.txt")
 print(result) -- "file moved successfully"
 ```
 
+#### `manager.dfile(path, isundo, undofile)`
+Deletes files with undo functionality or restores files from backup.
+
+**Parameters:**
+- `path` (string) - Path of the file to delete/restore
+- `isundo` (boolean) - If true, restores file; if false, deletes file
+- `undofile` (string, optional) - Path for undo backup file
+
+**Returns:**
+- `string` - Success message or error description
+
+**Example:**
+```lua
+-- Delete file with auto backup
+local result = manager.dfile("config.json", false)
+print(result) -- "file deleted successfully, undo backup created at: config.json.undo"
+
+-- Restore file from backup
+local result = manager.dfile("config.json", true, "config.json.undo")
+print(result) -- "file restored successfully from undo backup"
+```
+
 ### HTTP Operations
 
 #### `manager.download(url, path, Method, Headers)`
@@ -151,6 +173,44 @@ Creates a sample HTML GUI to demonstrate the conversion functionality.
 **Example:**
 ```lua
 manager.createSampleHtmlGui() -- Creates a sample GUI with buttons, inputs, etc.
+```
+
+### ScriptFolder Management
+
+#### `manager.getScriptFolder()`
+Gets or creates the scriptfolder in the workspace for organizing Roblox objects.
+
+**Returns:**
+- `Instance` - The scriptfolder instance or nil if creation failed
+
+**Example:**
+```lua
+local scriptFolder = manager.getScriptFolder()
+if scriptFolder then
+    print("ScriptFolder found:", scriptFolder.Name)
+end
+```
+
+#### `manager.cleanupScriptFolder()`
+Destroys the entire scriptfolder and all its contents.
+
+**Example:**
+```lua
+manager.cleanupScriptFolder() -- Cleans up all organized objects
+```
+
+#### `manager.listScriptFolderContents()`
+Lists all contents in the scriptfolder with detailed information.
+
+**Returns:**
+- `table` - Array of objects with name, type, and children information
+
+**Example:**
+```lua
+local contents = manager.listScriptFolderContents()
+for _, item in ipairs(contents) do
+    print("Found:", item.name, "Type:", item.type)
+end
 ```
 
 ### System Diagnostics

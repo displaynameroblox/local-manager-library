@@ -506,6 +506,96 @@ function manager.download(url, path, Method, Headers)
     end
 end
 
+function manager.dfile(path, isundo, undofile)
+    if not path or path == "" then
+        return "cannot delete file, did you forget to add path?"
+    end
+    
+    if isundo then
+        -- Undo mode: restore file from backup
+        if not undofile or undofile == "" then
+            return "cannot undo file deletion, did you forget to add undo file path?"
+        end
+        
+        -- Check if undo file exists
+        local undoExists = pcall(function()
+            return isfile(undofile)
+        end)
+        
+        if not undoExists then
+            return "undo file not found: " .. undofile
+        end
+        
+        -- Read undo file content
+        local undoSuccess, undoData = pcall(function()
+            return readfile(undofile)
+        end)
+        
+        if not undoSuccess then
+            return "failed to read undo file: " .. undoData
+        end
+        
+        -- Restore original file
+        local restoreSuccess, restoreError = pcall(function()
+            writefile(path, undoData)
+        end)
+        
+        if restoreSuccess then
+            -- Delete the undo file after successful restore
+            pcall(function()
+                delfile(undofile)
+            end)
+            return "file restored successfully from undo backup"
+        else
+            return "failed to restore file: " .. restoreError
+        end
+        
+    else
+        -- Normal delete mode: delete file and create backup
+        local fileExists = pcall(function()
+            return isfile(path)
+        end)
+        
+        if not fileExists then
+            return "file not found: " .. path
+        end
+        
+        -- Read file content for backup
+        local readSuccess, fileData = pcall(function()
+            return readfile(path)
+        end)
+        
+        if not readSuccess then
+            return "failed to read file: " .. fileData
+        end
+        
+        -- Create undo backup file
+        local undoPath = undofile or (path .. ".undo")
+        local backupSuccess, backupError = pcall(function()
+            writefile(undoPath, fileData)
+        end)
+        
+        if not backupSuccess then
+            return "failed to create undo backup: " .. backupError
+        end
+        
+        -- Delete original file
+        local deleteSuccess, deleteError = pcall(function()
+            delfile(path)
+        end)
+        
+        if deleteSuccess then
+            return "file deleted successfully, undo backup created at: " .. undoPath
+        else
+            -- If deletion fails, clean up the backup
+            pcall(function()
+                delfile(undoPath)
+            end)
+            return "failed to delete file: " .. deleteError
+        end
+    end
+end
+
 -- okay here should be a part for handling mp3 files and oher media files but im not sure how to do it
 
 function manager.media(path, type, typeofmedia, isfolder, folder)
