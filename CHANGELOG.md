@@ -5,6 +5,45 @@ All notable changes to the Local Manager Library will be documented in this file
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.1] - 30 Sep 2025
+
+### 🔧 Improvements
+
+#### **File Operations Enhancement**
+- **Completed Function**: `manager.changefile(path, newdata)` - Change file content with backup functionality
+  - Reads existing file content before modification
+  - Writes new content to file
+  - Returns old content for backup purposes
+  - Comprehensive error handling and validation
+  - File existence checking before modification
+  - Proper error messages for all failure scenarios
+
+### 📚 Documentation Updates
+
+#### **API Documentation**
+- **API.md**: Added complete documentation for `manager.changefile()` function
+  - Function signature and parameters
+  - Return values and error messages
+  - Usage examples and best practices
+  - Error handling patterns
+
+#### **Troubleshooting Guide**
+- **TROUBLESHOOTING.md**: Added comprehensive troubleshooting section for changefile function
+  - Common error scenarios and solutions
+  - Diagnostic code examples
+  - File permission and integrity checks
+  - Step-by-step troubleshooting guides
+
+### 🐛 Bug Fixes
+
+#### **Function Completion**
+- **Fixed**: `manager.changefile()` function was incomplete and non-functional
+- **Fixed**: Missing error handling for file read/write operations
+- **Fixed**: Incomplete return value handling
+- **Fixed**: Missing file existence validation
+
+---
+
 ## [1.2.0] - 30 Sep 2025
 
 ### 🎉 Major Features Added
@@ -171,7 +210,7 @@ local audioFolder = scriptFolder:FindFirstChild("Audio")
 - Batch operations for media files
 - Advanced HTML parsing and GUI conversion
 - Plugin system for custom save types
-- java to lua "don't ask me how i'm gonna do it"
+- java to lua "don't ask me how i'm gonna do it"    
 
 #### **Improvements**
 - Performance optimizations

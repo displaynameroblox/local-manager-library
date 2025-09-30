@@ -68,6 +68,11 @@ end
 | `ERR_FILE_READ_FAILED` | Failed to read source file | File corruption, permission issues | Check file integrity and permissions |
 | `ERR_FILE_WRITE_FAILED` | Failed to write to destination file | Disk space, permission issues | Check disk space and permissions |
 | `ERR_FILE_DELETE_FAILED` | Failed to delete source file | File in use, permission issues | Close file handles and check permissions |
+| `ERR_FILE_CHANGE_PATH_MISSING` | Cannot readfile, did you forget to add path? | Missing file path for changefile | Provide valid file path |
+| `ERR_FILE_CHANGE_DATA_MISSING` | Cannot changefile, did you forget to add newdata? | Missing new data for changefile | Provide new file content |
+| `ERR_FILE_CHANGE_NOT_FOUND` | File not found: [path] | File doesn't exist for changefile | Verify file exists before changing |
+| `ERR_FILE_CHANGE_READ_FAILED` | Failed to read file: [error] | File read error during changefile | Check file permissions and integrity |
+| `ERR_FILE_CHANGE_WRITE_FAILED` | Failed to write new data: [error] | File write error during changefile | Check write permissions and disk space |
 
 ### HTTP Operations Error Codes
 
@@ -258,6 +263,181 @@ end
    ```lua
    manager.new("source.txt", "content")  -- Create source file
    manager.move("source.txt", "dest.txt") -- Then move it
+   ```
+
+### Issue: "Cannot changefile, did you forget to add newdata?"
+
+**Symptoms:**
+- Function returns error about missing newdata parameter
+- No file modification occurs
+
+**Diagnosis:**
+```lua
+-- Check if newdata is provided
+local path = "config.json"
+local newdata = '{"setting": "new_value"}'  -- Make sure this is not nil or empty
+
+if not newdata or newdata == "" then
+    print("❌ Newdata is missing or empty")
+else
+    print("✅ Newdata is valid:", newdata)
+end
+```
+
+**Solutions:**
+1. **Provide new file content:**
+   ```lua
+   manager.changefile("config.json", '{"setting": "new_value"}')  -- ✅ Correct
+   manager.changefile("config.json", "")                          -- ❌ Empty content
+   manager.changefile("config.json", nil)                         -- ❌ Nil content
+   ```
+
+2. **Check content type:**
+   ```lua
+   -- Ensure newdata is a string
+   local newdata = "new file content"
+   if type(newdata) == "string" then
+       manager.changefile("file.txt", newdata)
+   else
+       print("❌ Newdata must be a string")
+   end
+   ```
+
+### Issue: "File not found: [path]" for changefile
+
+**Symptoms:**
+- Function returns file not found error
+- File modification fails
+
+**Diagnosis:**
+```lua
+-- Check if file exists before changing
+local path = "config.json"
+local fileExists = isfile(path)
+
+if fileExists then
+    print("✅ File exists:", path)
+else
+    print("❌ File not found:", path)
+end
+```
+
+**Solutions:**
+1. **Create file first:**
+   ```lua
+   -- Create file if it doesn't exist
+   if not isfile("config.json") then
+       manager.new("config.json", '{"setting": "default"}')
+   end
+   -- Then change it
+   manager.changefile("config.json", '{"setting": "new_value"}')
+   ```
+
+2. **Verify file path:**
+   ```lua
+   -- List files to find correct path
+   local files = listfiles(".")
+   for _, file in ipairs(files) do
+       print("Found file:", file)
+   end
+   ```
+
+### Issue: "Failed to write new data: [error]"
+
+**Symptoms:**
+- File exists and can be read
+- New content cannot be written
+- Function returns write error
+
+**Diagnosis:**
+```lua
+-- Test file write permissions
+local testPath = "test_write.txt"
+local success, error = pcall(function()
+    writefile(testPath, "test content")
+    delfile(testPath)
+end)
+
+if success then
+    print("✅ File writing works")
+else
+    print("❌ File writing failed:", error)
+end
+```
+
+**Solutions:**
+1. **Check disk space:**
+   ```lua
+   -- Ensure sufficient disk space for file modification
+   ```
+
+2. **Check file permissions:**
+   ```lua
+   -- Verify write access to the file
+   local success, content = pcall(function()
+       return readfile("config.json")
+   end)
+   
+   if success then
+       print("✅ File is readable, checking write access...")
+       -- Try to write back the same content
+       local writeSuccess = pcall(function()
+           writefile("config.json", content)
+       end)
+       
+       if writeSuccess then
+           print("✅ File is writable")
+       else
+           print("❌ File write access denied")
+       end
+   end
+   ```
+
+3. **Check if file is locked:**
+   ```lua
+   -- Make sure no other process is using the file
+   -- Close any open file handles
+   ```
+
+### Issue: "Failed to read file: [error]"
+
+**Symptoms:**
+- File exists but cannot be read
+- Function returns read error
+
+**Diagnosis:**
+```lua
+-- Test file read access
+local path = "config.json"
+local success, content = pcall(function()
+    return readfile(path)
+end)
+
+if success then
+    print("✅ File readable, size:", #content)
+else
+    print("❌ File read failed:", content)
+end
+```
+
+**Solutions:**
+1. **Check file integrity:**
+   ```lua
+   -- Verify file is not corrupted
+   local success, content = pcall(function()
+       return readfile("config.json")
+   end)
+   
+   if success and content and #content > 0 then
+       print("✅ File is valid")
+   else
+       print("❌ File is corrupted or empty")
+   end
+   ```
+
+2. **Check file permissions:**
+   ```lua
+   -- Ensure read access to the file
    ```
 
 ---

@@ -91,6 +91,47 @@ local result = manager.move("old.txt", "new.txt")
 -- Returns: "file moved successfully"
 ```
 
+### `manager.changefile(path, newdata)`
+
+Changes the content of an existing file and returns the old content for backup purposes.
+
+**Signature:**
+```lua
+function manager.changefile(path: string, newdata: string): (string, string)
+```
+
+**Parameters:**
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `path` | `string` | ✅ | Path of the file to modify |
+| `newdata` | `string` | ✅ | New content to write to the file |
+
+**Returns:**
+| Type | Description |
+|------|-------------|
+| `string` | Success message or error description |
+| `string` | Old file content (second return value) |
+
+**Success Messages:**
+- `"file changed successfully"` - File content updated successfully
+
+**Error Messages:**
+- `"cannot readfile, did you forget to add path?: [path]"` - When `path` is nil
+- `"cannot changefile, did you forget to add newdata?: [newdata]"` - When `newdata` is nil
+- `"file not found: [path]"` - When file doesn't exist
+- `"failed to read file: [error]"` - When file cannot be read
+- `"failed to write new data: [error]"` - When new content cannot be written
+
+**Example:**
+```lua
+-- Change file content and get the old data back
+local success, oldData = manager.changefile("config.json", '{"setting": "new_value"}')
+print(success) -- "file changed successfully"
+print(oldData) -- The previous content of the file
+```
+
+---
+
 ### `manager.dfile(path, isundo, undofile)`
 
 Deletes files with undo functionality or restores files from backup.
