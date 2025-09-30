@@ -5,7 +5,7 @@
 local manager = loadstring(game:HttpGet("https://raw.githubusercontent.com/displaynameroblox/localmaner/main/localmaner.lua"))()
 
 -- Load the media player
-loadstring(readfile("mediaplayer.lua"))()
+loadstring(loadstring(game:HttpGet("https://raw.githubusercontent.com/displaynameroblox/localmaner/main/mediaplayer.lua"))())()
 
 print("Media Player loaded successfully!")
 print("The GUI should now be visible on your screen.")
