@@ -9,6 +9,7 @@ Complete API reference for the Local Manager Library.
 - [HTML to GUI Conversion](#html-to-gui-conversion)
 - [Media Operations](#media-operations)
 - [ScriptFolder Management](#scriptfolder-management)
+- [Script Conversion](#script-conversion)
 - [System Diagnostics](#system-diagnostics)
 - [Error Codes](#error-codes)
 - [Data Types](#data-types)
@@ -687,6 +688,82 @@ function manager.createScriptFolderStructure(): string
 local result = manager.createScriptFolderStructure()
 -- Returns: "created 6 subfolders in scriptfolder"
 ```
+
+---
+
+## Script Conversion
+
+### `manager.javatolua(scripted, doexecute)` ⚠️ EXPERIMENTAL
+
+**[EXPERIMENTAL FEATURE]** Converts Java code to Lua format and optionally executes it. This is a placeholder implementation that provides basic Java-like syntax recognition.
+
+**⚠️ Warning:** This is an experimental function with limited Java parsing capabilities. It's primarily a proof-of-concept and may not handle complex Java code correctly.
+
+**Signature:**
+```lua
+function manager.javatolua(scripted: string, doexecute: boolean): (string, string?)
+```
+
+**Parameters:**
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `scripted` | `string` | ✅ | Java code to convert to Lua |
+| `doexecute` | `boolean` | ✅ | Whether to execute the converted Lua code |
+
+**Returns:**
+| Type | Description |
+|------|-------------|
+| `string` | Success message or error description |
+| `string?` | Converted Lua code (second return value) |
+
+**Success Messages:**
+- `"java to lua conversion completed successfully"` - Conversion completed without execution
+- `"java to lua conversion completed successfully"` - Conversion and execution completed
+
+**Error Messages:**
+- `"cannot find script, did you forget to add script?: [scripted]"` - When `scripted` is nil
+- `"cannot convert java to lua, did you forget to add doexecute parameter?: [doexecute]"` - When `doexecute` is nil
+- `"invalid script content, please provide a valid string"` - When script content is invalid
+- `"failed to process script: [error]"` - When script processing fails
+- `"failed to execute converted script: [error]"` - When script execution fails
+
+**Example - Convert Without Execution:**
+```lua
+local javaCode = [[
+public class HelloWorld {
+    public static void main(String[] args) {
+        System.out.println("Hello, World!");
+    }
+}
+]]
+
+local result, luaCode = manager.javatolua(javaCode, false)
+-- Returns: "java to lua conversion completed successfully", converted Lua code
+print("Converted code:", luaCode)
+```
+
+**Example - Convert and Execute:**
+```lua
+local javaCode = "print('Hello from Java-like code')"
+local result = manager.javatolua(javaCode, true)
+-- Returns: "java to lua conversion completed successfully"
+```
+
+**Implementation Notes:**
+- ⚠️ EXPERIMENTAL IMPLEMENTATION
+- Currently only recognizes basic Java keywords (`class`, `public`, `private`)
+- Conversion is a placeholder - actual Java parsing not implemented
+- Uses `loadstring()` for execution (executor-dependent)
+- Limited error handling for complex Java syntax
+- May not work correctly with all Java code structures
+
+**Known Limitations:**
+1. No actual Java parser - just keyword recognition
+2. Complex Java syntax not supported
+3. No AST transformation
+4. Limited error reporting
+5. Execution depends on executor capabilities
+6. Placeholder conversion logic
 
 ---
 

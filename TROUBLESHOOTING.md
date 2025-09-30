@@ -9,6 +9,7 @@ Complete troubleshooting guide for resolving issues with the Local Manager Libra
 - [File Operations Issues](#file-operations-issues)
 - [File Deletion Issues](#file-deletion-issues)
 - [Save Operations Issues](#save-operations-issues)
+- [Script Conversion Issues](#script-conversion-issues)
 - [HTTP/Network Issues](#httpnetwork-issues)
 - [HTML to GUI Issues](#html-to-gui-issues)
 - [Media Operations Issues](#media-operations-issues)
@@ -140,6 +141,16 @@ end
 | `ERR_SAVEAS_WRITE_FAILED` | Failed to write type file | File writing error | Check file permissions and disk space |
 | `ERR_SAVEAS_ASSET_FAILED` | Failed to create custom asset for audio | Custom asset creation failed | Check executor custom asset support |
 | `ERR_SAVEAS_INSTANCE_FAILED` | Failed to create Type instance | Instance creation failed | Check executor instance creation support |
+
+### Script Conversion Error Codes
+
+| Error Code | Description | Common Causes | Solution |
+|------------|-------------|---------------|----------|
+| `ERR_JAVATOLUA_SCRIPT_MISSING` | Cannot find script, did you forget to add script? | Missing script parameter | Provide Java code as string |
+| `ERR_JAVATOLUA_EXECUTE_MISSING` | Cannot convert java to lua, did you forget to add doexecute parameter? | Missing doexecute parameter | Provide boolean value for execution |
+| `ERR_JAVATOLUA_INVALID_SCRIPT` | Invalid script content, please provide a valid string | Invalid script content | Provide valid string with Java code |
+| `ERR_JAVATOLUA_PROCESS_FAILED` | Failed to process script | Script processing error | Check Java code syntax and format |
+| `ERR_JAVATOLUA_EXECUTE_FAILED` | Failed to execute converted script | Script execution error | Check executor loadstring support |
 
 ### File Deletion Error Codes
 
@@ -1255,6 +1266,209 @@ end
    -- Try with a basic audio file first
    manager.media("simple.mp3", "audio", "audio", false)
    ```
+
+---
+
+## 🔄 Script Conversion Issues
+
+### Issue: "Cannot find script, did you forget to add script?"
+
+**Symptoms:**
+- Function returns error about missing script parameter
+- No conversion occurs
+
+**Diagnosis:**
+```lua
+-- Check if script is provided
+local script = "public class Test {}"  -- Make sure this is not nil or empty
+
+if not script or script == "" then
+    print("❌ Script is missing or empty")
+else
+    print("✅ Script is valid:", script)
+end
+```
+
+**Solutions:**
+1. **Provide Java code:**
+   ```lua
+   local javaCode = "public class HelloWorld { public static void main(String[] args) { System.out.println(\"Hello\"); } }"
+   local result = manager.javatolua(javaCode, false)  -- ✅ Correct
+   local result = manager.javatolua("", false)        -- ❌ Empty script
+   local result = manager.javatolua(nil, false)       -- ❌ Nil script
+   ```
+
+2. **Check script format:**
+   ```lua
+   -- Ensure script is a valid string
+   if type(script) == "string" then
+       local result = manager.javatolua(script, false)
+   else
+       print("❌ Script must be a string")
+   end
+   ```
+
+### Issue: "Cannot convert java to lua, did you forget to add doexecute parameter?"
+
+**Symptoms:**
+- Function returns error about missing doexecute parameter
+- No conversion occurs
+
+**Diagnosis:**
+```lua
+-- Check if doexecute is provided
+local doexecute = true  -- Make sure this is not nil
+
+if doexecute == nil then
+    print("❌ doexecute parameter is missing")
+else
+    print("✅ doexecute parameter is valid:", doexecute)
+end
+```
+
+**Solutions:**
+1. **Provide doexecute parameter:**
+   ```lua
+   local result = manager.javatolua(javaCode, true)   -- ✅ Execute the converted code
+   local result = manager.javatolua(javaCode, false)  -- ✅ Just convert, don't execute
+   local result = manager.javatolua(javaCode, nil)    -- ❌ Nil parameter
+   ```
+
+2. **Understand the parameter:**
+   ```lua
+   -- true = convert and execute the Lua code
+   -- false = convert to Lua but don't execute
+   local result = manager.javatolua("print('Hello')", true)  -- Will execute the converted code
+   ```
+
+### Issue: "Invalid script content, please provide a valid string"
+
+**Symptoms:**
+- Function returns error about invalid script content
+- Script validation fails
+
+**Diagnosis:**
+```lua
+-- Check script content
+local script = "public class Test {}"
+local isValid = script and type(script) == "string" and #script > 0
+
+if isValid then
+    print("✅ Script content is valid")
+else
+    print("❌ Script content is invalid")
+    print("Type:", type(script))
+    print("Length:", script and #script or "nil")
+end
+```
+
+**Solutions:**
+1. **Ensure valid script content:**
+   ```lua
+   -- Provide non-empty string
+   local javaCode = "public class Test { public void method() { } }"  -- ✅ Valid
+   local javaCode = ""                                               -- ❌ Empty string
+   local javaCode = nil                                              -- ❌ Nil value
+   ```
+
+2. **Check script content:**
+   ```lua
+   -- Make sure script contains actual Java-like code
+   local javaCode = "public class HelloWorld { }"  -- ✅ Contains Java keywords
+   local javaCode = "just some text"               -- ❌ No Java keywords
+   ```
+
+### Issue: "Failed to process script"
+
+**Symptoms:**
+- Script validation passes but processing fails
+- Function returns processing error
+
+**Diagnosis:**
+```lua
+-- Test script processing
+local javaCode = "public class Test { }"
+local success, result = pcall(function()
+    return manager.javatolua(javaCode, false)
+end)
+
+if success then
+    print("✅ Script processing successful:", result)
+else
+    print("❌ Script processing failed:", result)
+end
+```
+
+**Solutions:**
+1. **Check Java code syntax:**
+   ```lua
+   -- Use simple Java-like syntax
+   local javaCode = "public class Simple { }"  -- ✅ Simple syntax
+   local javaCode = "complex; invalid; syntax" -- ❌ Invalid syntax
+   ```
+
+2. **Test with minimal code:**
+   ```lua
+   -- Start with very simple Java code
+   local javaCode = "class Test {}"
+   local result = manager.javatolua(javaCode, false)
+   ```
+
+### Issue: "Failed to execute converted script"
+
+**Symptoms:**
+- Conversion succeeds but execution fails
+- Function returns execution error
+
+**Diagnosis:**
+```lua
+-- Test execution capabilities
+local success, result = pcall(function()
+    loadstring("print('test')")()
+    return true
+end)
+
+if success then
+    print("✅ Script execution is supported")
+else
+    print("❌ Script execution not supported:", result)
+end
+```
+
+**Solutions:**
+1. **Check executor capabilities:**
+   ```lua
+   -- Test if loadstring is available
+   if loadstring then
+       print("✅ loadstring is available")
+   else
+       print("❌ loadstring not available - execution will fail")
+   end
+   ```
+
+2. **Use conversion without execution:**
+   ```lua
+   -- If execution fails, just convert without executing
+   local result, luaCode = manager.javatolua(javaCode, false)
+   print("Converted code:", luaCode)
+   
+   -- Then execute manually if needed
+   if loadstring then
+       local success, err = pcall(function()
+           loadstring(luaCode)()
+       end)
+   end
+   ```
+
+3. **Note: This is experimental - errors are expected**
+   ```lua
+   -- Java to Lua conversion is experimental
+   -- Consider using pure Lua code instead for production use
+   ```
+
+---
+
+## 🎵 Media Operations Issues
 
 ### Issue: "Failed to read video file" (EXPERIMENTAL)
 

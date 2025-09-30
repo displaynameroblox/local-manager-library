@@ -1659,6 +1659,9 @@ function manager.javatolua(scripted, doexecute)
     else
         return "java to lua conversion completed successfully", compiledData
     end
+    if not execute then
+        return "cannot turn into lua without execute, compiling without executing coming soon.."
+    end
 end
 
 return manager
