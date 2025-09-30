@@ -1,21 +1,20 @@
--- here you can use local manager for a lot of things, like a media player.
+-- Quick Try - Media Player Example
+-- This file demonstrates how to use the localmaner library for media playback
 
-local manager = loadstring(game:HttpGet("https://raw.githubusercontent.com/displaynameroblox/localmaner/main/localmaner.lua"))() -- load the library
+-- Load the localmaner library
+local manager = loadstring(game:HttpGet("https://raw.githubusercontent.com/displaynameroblox/localmaner/main/localmaner.lua"))()
 
-local settings = {} -- for settings,
+-- Load the media player
+loadstring(readfile("mediaplayer.lua"))()
 
-local function settingshandler(act)
-    local avalibeleacts = {
-        "removedata",
-        "add",
-        "load",
-        "new"
-    }
-    if act == new then
-        local newsettings = {
-            playlist = {},
-            sounds = {}
-        }
-        if isfile("")
-    end
-end
+print("Media Player loaded successfully!")
+print("The GUI should now be visible on your screen.")
+print("You can:")
+print("- Click 'Add Track to Playlist' to add audio files")
+print("- Use the control buttons to play, pause, stop, next, previous")
+print("- Adjust volume with the slider")
+print("- Click on tracks in the playlist to play them")
+print("- Use keyboard shortcuts: Space (play/pause), Left/Right arrows (previous/next), Escape (stop)")
+
+-- Example: Add a sample track (replace with actual file path)
+-- player:addToPlaylist("path/to/your/audio.mp3", "Sample Track")
