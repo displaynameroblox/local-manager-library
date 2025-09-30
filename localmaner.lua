@@ -539,6 +539,30 @@ function manager.download(url, path, Method, Headers)
     end
 end
 
+function manager.changefile(path, newdata)
+    local datatobereturn = nil
+    local oldata = nil
+    -- error handler
+    if not path then
+        return "cannot readfile, did you forget to add path?: " .. path
+    elseif not newdata then
+        return "cannot changefile, did you forget to add newdata?: " .. newdata
+    end
+    if path then
+        local result = pcall(function()
+            if isfile(path) then
+                local tobereturned = readfile(path)
+                return tobereturned
+            end
+        end)
+        if result then
+            if tobereturned then
+                -- LATER SHIT
+            end
+        end
+    end
+end
+
 function manager.dfile(path, isundo, undofile)
     if not path or path == "" then
         return "cannot delete file, did you forget to add path?"
