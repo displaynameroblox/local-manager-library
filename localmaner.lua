@@ -548,19 +548,39 @@ function manager.changefile(path, newdata)
     elseif not newdata then
         return "cannot changefile, did you forget to add newdata?: " .. newdata
     end
-    if path then
-        local result = pcall(function()
-            if isfile(path) then
-                local tobereturned = readfile(path)
-                return tobereturned
-            end
-        end)
-        if result then
-            if tobereturned then
-                -- LATER SHIT
-            end
-        end
+    
+    -- Check if file exists
+    local fileExists = pcall(function()
+        return isfile(path)
+    end)
+    
+    if not fileExists then
+        return "file not found: " .. path
     end
+    
+    -- Read the old data first
+    local readSuccess, oldContent = pcall(function()
+        return readfile(path)
+    end)
+    
+    if not readSuccess then
+        return "failed to read file: " .. tostring(oldContent)
+    end
+    
+    -- Store old data for return
+    oldata = oldContent
+    
+    -- Write the new data
+    local writeSuccess, writeError = pcall(function()
+        writefile(path, newdata)
+    end)
+    
+    if not writeSuccess then
+        return "failed to write new data: " .. tostring(writeError)
+    end
+    
+    -- Return success message with old data
+    return "file changed successfully", oldata
 end
 
 function manager.dfile(path, isundo, undofile)
