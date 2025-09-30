@@ -650,7 +650,7 @@ function manager.media(path, type, typeofmedia, isfolder, folder)
             return "cannot handle media, did you forget to add path?"
         end
     end
-    
+
     if not type or type == "" then
         return "cannot handle media, did you forget to add type?"
     elseif not typeofmedia or typeofmedia == "" then
@@ -897,7 +897,8 @@ function manager.html(url, islocal, path, convertToGui, parentGui)
     if not path then
         return "cannot handle html, did you forget to add path?"
     elseif not islocal and not url then
-        return "i won't classify that you are a programmer, put the url and the path, and say if it local or not. dont keep it empty"
+        return
+        "i won't classify that you are a programmer, put the url and the path, and say if it local or not. dont keep it empty"
     end
 
     local htmlContent = nil
@@ -1240,28 +1241,32 @@ end
 function manager.saveas(path, content, type)
     -- ⚠️ EXPERIMENTAL FUNCTION - Use with caution
     -- This function creates instances in the game environment and may not work on all executors
-    
+
     -- Input validation
     if not path or path == "" then
         return "cannot save file, did you forget to add path?"
     end
-    
+
     if not content or content == "" then
         return "cannot save file without content"
     end
-    
+
     if not type or type == "" then
         return "cannot save file without type specification"
     end
-    
+
     -- Normalize type parameter (case-insensitive)
     type = type:lower()
-    if type == "sound" then type = "Sound" 
-    elseif type == "model" then type = "Model"
-    elseif type == "script" then type = "Script"
-    elseif type == "image" then type = "Image"
+    if type == "sound" then
+        type = "Sound"
+    elseif type == "model" then
+        type = "Model"
+    elseif type == "script" then
+        type = "Script"
+    elseif type == "image" then
+        type = "Image"
     end
-    
+
     -- Validate supported types
     local supportedTypes = {
         Sound = { implemented = true, experimental = true },
@@ -1269,7 +1274,7 @@ function manager.saveas(path, content, type)
         Script = { implemented = false, experimental = true },
         Image = { implemented = false, experimental = true }
     }
-    
+
     if not supportedTypes[type] then
         local typeList = {}
         for t, info in pairs(supportedTypes) do
@@ -1281,27 +1286,28 @@ function manager.saveas(path, content, type)
         end
         return "unsupported save type: " .. tostring(type) .. ". Supported types: " .. table.concat(typeList, ", ")
     end
-    
+
     -- Check if type is implemented
     if not supportedTypes[type].implemented then
-        return "save type '" .. type .. "' is recognized but not yet implemented. This feature is planned for future versions."
+        return "save type '" ..
+            type .. "' is recognized but not yet implemented. This feature is planned for future versions."
     end
-    
+
     -- Check if file already exists
     local fileExists = pcall(function()
         return isfile(path)
     end)
-    
+
     if fileExists then
         return "file already exists at path: " .. path
     end
-    
+
     -- Extract filename from path
     local filename = path:match("([^/\\]+)$")
     if not filename then
         return "invalid file path format: " .. path
     end
-    
+
     -- Type-specific implementations
     if type == "Sound" then
         return manager._saveasSound(path, content, filename)
@@ -1312,7 +1318,7 @@ function manager.saveas(path, content, type)
     elseif type == "Image" then
         return manager._saveasImage(path, content, filename)
     end
-    
+
     return "unknown error in saveas function"
 end
 
@@ -1322,42 +1328,42 @@ function manager._saveasSound(path, content, filename)
     if type(content) ~= "string" then
         return "invalid content type for Sound: expected string, got " .. type(content)
     end
-    
+
     if #content < 100 then
         return "content too small to be valid audio data (minimum 100 bytes required)"
     end
-    
+
     -- Step 2: Write the raw audio file first
     local writeSuccess, writeError = pcall(function()
         return writefile(path, content)
     end)
-    
+
     if not writeSuccess then
         return "failed to write audio file: " .. tostring(writeError)
     end
-    
+
     -- Step 3: Create custom asset
     local assetSuccess, assetOrError = pcall(function()
         return getcustomasset(path)
     end)
-    
+
     if not assetSuccess then
         -- Clean up the written file
         pcall(function() delfile(path) end)
         return "failed to create custom asset for audio: " .. tostring(assetOrError)
     end
-    
+
     -- Step 4: Create Sound instance
     local instanceSuccess, instanceOrError = pcall(function()
         local sound = Instance.new("Sound")
         if not sound then
             error("Failed to create Sound instance")
         end
-        
+
         sound.Name = filename:gsub("%.mp3$", ""):gsub("%.wav$", ""):gsub("%.ogg$", "") or "Audio"
         sound.SoundId = assetOrError
         sound.Volume = 0.5 -- Default volume
-        
+
         -- Try to put in scriptfolder for organization
         local scriptFolder = getScriptFolder()
         if scriptFolder then
@@ -1372,16 +1378,16 @@ function manager._saveasSound(path, content, filename)
             -- Fallback to workspace
             sound.Parent = game.Workspace
         end
-        
+
         return sound
     end)
-    
+
     if not instanceSuccess then
         -- Clean up the written file
         pcall(function() delfile(path) end)
         return "failed to create Sound instance: " .. tostring(instanceOrError)
     end
-    
+
     return "file saved successfully as Sound: " .. filename .. " (instance created in game environment)"
 end
 
@@ -1391,15 +1397,15 @@ function manager._saveasModel(path, content, filename)
     if type(content) ~= "table" and type(content) ~= "userdata" then
         return "invalid content type for Model: expected Model instance or table, got " .. type(content)
     end
-    
+
     local success, error = pcall(function()
         local model = Instance.new("Model")
         if not model then
             error("Failed to create Model instance")
         end
-        
+
         model.Name = filename:gsub("%.rbxl$", ""):gsub("%.rbxlx$", "") or "SavedModel"
-        
+
         -- Try to clone content if it's a Model instance
         if content and content.Clone then
             local clone = content:Clone()
@@ -1414,7 +1420,7 @@ function manager._saveasModel(path, content, filename)
                 end
             end
         end
-        
+
         -- Put in scriptfolder for organization
         local scriptFolder = getScriptFolder()
         if scriptFolder then
@@ -1428,26 +1434,27 @@ function manager._saveasModel(path, content, filename)
         else
             model.Parent = game.Workspace
         end
-        
+
         -- Save metadata to file (very basic)
         local metadata = {
             name = model.Name,
             children = #model:GetChildren(),
             timestamp = tick()
         }
-        
+
         local metadataString = "Model Metadata:\n"
         metadataString = metadataString .. "Name: " .. metadata.name .. "\n"
         metadataString = metadataString .. "Children: " .. metadata.children .. "\n"
         metadataString = metadataString .. "Timestamp: " .. metadata.timestamp .. "\n"
-        
+
         writefile(path, metadataString)
-        
+
         return model
     end)
-    
+
     if success then
-        return "file saved successfully as Model: " .. filename .. " (EXPERIMENTAL - instance created in game environment)"
+        return "file saved successfully as Model: " ..
+            filename .. " (EXPERIMENTAL - instance created in game environment)"
     else
         return "failed to save Model file: " .. tostring(error) .. " (EXPERIMENTAL FEATURE)"
     end
@@ -1458,17 +1465,18 @@ function manager._saveasScript(path, content, filename)
     if type(content) ~= "string" then
         return "invalid content type for Script: expected string, got " .. type(content)
     end
-    
+
     -- For now, just save as a regular script file
     local writeSuccess, writeError = pcall(function()
         return writefile(path, content)
     end)
-    
+
     if not writeSuccess then
         return "failed to write script file: " .. tostring(writeError)
     end
-    
-    return "file saved successfully as Script: " .. filename .. " (PLANNED FEATURE - instance creation not yet implemented)"
+
+    return "file saved successfully as Script: " ..
+        filename .. " (PLANNED FEATURE - instance creation not yet implemented)"
 end
 
 -- Internal function to save Image instances (PLANNED)
@@ -1476,17 +1484,18 @@ function manager._saveasImage(path, content, filename)
     if type(content) ~= "string" then
         return "invalid content type for Image: expected string, got " .. type(content)
     end
-    
+
     -- For now, just save as a regular image file
     local writeSuccess, writeError = pcall(function()
         return writefile(path, content)
     end)
-    
+
     if not writeSuccess then
         return "failed to write image file: " .. tostring(writeError)
     end
-    
-    return "file saved successfully as Image: " .. filename .. " (PLANNED FEATURE - instance creation not yet implemented)"
+
+    return "file saved successfully as Image: " ..
+        filename .. " (PLANNED FEATURE - instance creation not yet implemented)"
 end
 
 -- Helper function to check saveas capabilities
@@ -1500,7 +1509,7 @@ function manager.checkSaveasCapabilities()
         CustomAssets = false,
         FileWriting = false
     }
-    
+
     -- Test Instance creation
     local instanceSuccess = pcall(function()
         local testInstance = Instance.new("Sound")
@@ -1508,7 +1517,7 @@ function manager.checkSaveasCapabilities()
         return true
     end)
     capabilities.InstanceCreation = instanceSuccess
-    
+
     -- Test custom asset creation (requires existing file)
     local assetSuccess = pcall(function()
         -- Try to get custom asset for a test file
@@ -1519,7 +1528,7 @@ function manager.checkSaveasCapabilities()
         return asset ~= nil
     end)
     capabilities.CustomAssets = assetSuccess
-    
+
     -- Test file writing
     local writeSuccess = pcall(function()
         writefile("test_write.txt", "test")
@@ -1528,14 +1537,36 @@ function manager.checkSaveasCapabilities()
         return exists
     end)
     capabilities.FileWriting = writeSuccess
-    
+
     -- Determine supported types based on capabilities
     capabilities.Sound = capabilities.InstanceCreation and capabilities.CustomAssets and capabilities.FileWriting
     capabilities.Model = capabilities.InstanceCreation and capabilities.FileWriting
     capabilities.Script = capabilities.FileWriting
     capabilities.Image = capabilities.FileWriting
-    
+
     return capabilities
+end
+
+-- alright i might do the most silly thing ever, java to lua function, :p
+
+function manager.javatolua(scripted, doexecute)
+    local execte = nil
+    local string = nil
+    if not scripted then
+        return "cannot find script, did you forget to add script?" .. scripted
+    else
+        local worte = pcall(function()
+            if scripted then
+                string = scripted
+            end
+        end)
+        if worte then
+            -- coming soon
+            return "coming soon!"
+        elseif not worte then
+            return "something got wrong, try again. string: " .. string .. "."
+        end
+    end
 end
 
 return manager
