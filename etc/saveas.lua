@@ -24,7 +24,16 @@ function saveas.newsaveas(instance, path, moredebug)
                     return "cannot saveas, file already exists at path"
                 elseif not isfile(path) then
                     local worte, err = pcall(function()
-                        writefile(path, tostring(tobesaved))
+                        if instance == "Sound" then
+                            local file = writefile(path..".mp3",nil)
+                            if isfile(file) then
+                                writecustomasset(file, instance) -- only on wave, i think
+                            else
+                                if debug then
+                                    return "unknown error. file found: "..tostring(file)..", instance:"..tostring(instance)
+                                end
+                            end
+                        end
                         return "file saved successfully at path: " .. tostring(path)
                     end)
                     if not worte then
