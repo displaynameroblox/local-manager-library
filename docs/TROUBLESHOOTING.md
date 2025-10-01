@@ -128,20 +128,24 @@ end
 
 ### Save Operations Error Codes
 
+#### Deprecated `manager.saveas()` Function
+
 | Error Code | Description | Common Causes | Solution |
 |------------|-------------|---------------|----------|
-| `ERR_SAVEAS_PATH_MISSING` | Cannot save file, did you forget to add path? | Missing file path parameter | Provide valid file path |
-| `ERR_SAVEAS_CONTENT_MISSING` | Cannot save file without content | Missing content parameter | Provide content to save |
-| `ERR_SAVEAS_TYPE_MISSING` | Cannot save file without type specification | Missing type parameter | Specify supported type (Sound, Model, Script, Image) |
-| `ERR_SAVEAS_INVALID_PATH` | Invalid file path format | Malformed file path | Use valid file path format |
-| `ERR_SAVEAS_UNSUPPORTED_TYPE` | Unsupported save type | Invalid type specified | Use one of: Sound, Model, Script, Image |
-| `ERR_SAVEAS_FILE_EXISTS` | File already exists at path | Target file exists | Use different path or delete existing file |
-| `ERR_SAVEAS_TYPE_NOT_IMPLEMENTED` | Save type is recognized but not yet implemented | Using reserved type | Only use fully implemented types (currently Sound) |
-| `ERR_SAVEAS_INVALID_CONTENT_TYPE` | Invalid content type for type | Wrong content type for specified type | Use correct content type (string for Sound/Script/Image, table/userdata for Model) |
-| `ERR_SAVEAS_CONTENT_TOO_SMALL` | Content too small to be valid audio data | Audio data too small | Ensure audio content is at least 100 bytes |
-| `ERR_SAVEAS_WRITE_FAILED` | Failed to write type file | File writing error | Check file permissions and disk space |
-| `ERR_SAVEAS_ASSET_FAILED` | Failed to create custom asset for audio | Custom asset creation failed | Check executor custom asset support |
-| `ERR_SAVEAS_INSTANCE_FAILED` | Failed to create Type instance | Instance creation failed | Check executor instance creation support |
+| `ERR_SAVEAS_DEPRECATED` | Try using the new saveas: manager.newsaveas | Using deprecated function | Use manager.newsaveas instead |
+
+#### New `manager.newsaveas()` Function
+
+| Error Code | Description | Common Causes | Solution |
+|------------|-------------|---------------|----------|
+| `ERR_NEWSAVEAS_INSTANCE_MISSING` | Cannot saveas, did you forget to add instance? | Missing instance parameter | Provide instance type (Sound, video, model, script) |
+| `ERR_NEWSAVEAS_INSTANCE_MISSING_DEBUG` | Cannot saveas, did you forget to add instance?. instance found: [instance] path found: [path] | Missing instance parameter (debug mode) | Provide instance type and check parameters |
+| `ERR_NEWSAVEAS_FILE_EXISTS` | Cannot saveas, file already exists at path | Target file already exists | Use different path or delete existing file |
+| `ERR_NEWSAVEAS_FILE_EXISTS_DEBUG` | Cannot saveas, file already exists at path: [path]data found[data] | Target file already exists (debug mode) | Use different path or delete existing file |
+| `ERR_NEWSAVEAS_CANNOT_OVERWRITE` | File already exists, cannot overwire file | Trying to overwrite existing file | Use different path or delete existing file |
+| `ERR_NEWSAVEAS_TYPE_NOT_IMPLEMENTED` | Cannot saveas, more coming soon![path],[debug] | Using unsupported instance type | Use supported types (currently only Sound) |
+| `ERR_NEWSAVEAS_WRITE_FAILED` | Failed to save file at path | File writing error | Check file permissions and disk space |
+| `ERR_NEWSAVEAS_WRITE_FAILED_DEBUG` | Failed to save file at path: [path]error: [error] | File writing error (debug mode) | Check file permissions, disk space, and error details |
 
 ### Script Conversion Error Codes
 

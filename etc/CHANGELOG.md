@@ -6,6 +6,132 @@ All notable changes to the Local Manager Library will be documented in this file
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.3] - 2 Oct 2025 *saveas evolution*
+
+### 🔄 Breaking Changes
+
+#### **Save Operations Overhaul**
+- **DEPRECATED**: `manager.saveas(path, content, type)` - Function is now deprecated
+  - Always returns `"try using the new saveas: manager.newsaveas"`
+  - Original implementation removed
+  - Users must migrate to new function
+
+- **NEW**: `manager.newsaveas(instance, path, moredebug)` - New saveas implementation
+  - Improved parameter structure and validation
+  - Enhanced debug mode for detailed error reporting
+  - Better error handling and user feedback
+  - Currently supports Sound instances only
+  - Other instance types (video, model, script) planned for future versions
+
+### 🎯 New Features
+
+#### **Enhanced Debugging Support**
+- **Debug Mode**: New `moredebug` parameter in `manager.newsaveas()`
+  - Provides detailed error information when enabled
+  - Shows instance and path values in error messages
+  - Helps with troubleshooting and development
+  - Optional parameter (defaults to false)
+
+#### **Improved Error Handling**
+- **Detailed Error Messages**: More specific error reporting
+  - File existence validation with detailed feedback
+  - Content validation with type information
+  - Write operation failure details
+  - Debug mode provides additional context
+
+### 📚 Documentation Updates
+
+#### **API Documentation Overhaul**
+- **API.md**: Complete rewrite of saveas documentation
+  - Updated `manager.saveas()` as deprecated function
+  - Added comprehensive `manager.newsaveas()` documentation
+  - New parameter structure and examples
+  - Debug mode usage examples
+  - Migration guide from old to new function
+
+#### **Troubleshooting Guide Enhancement**
+- **TROUBLESHOOTING.md**: Updated error codes and troubleshooting
+  - Split saveas error codes into deprecated and new sections
+  - Added 8 new error codes for `manager.newsaveas()`
+  - Debug mode specific error handling
+  - Migration troubleshooting section
+
+### 🔧 Improvements
+
+#### **Function Architecture**
+- **Separate Implementation**: New saveas logic in separate `saveas.lua` file
+  - Cleaner code organization
+  - Easier maintenance and updates
+  - Better separation of concerns
+  - Future extensibility
+
+#### **Error Message Consistency**
+- **Standardized Format**: Consistent error message patterns
+  - Clear parameter validation messages
+  - Consistent debug mode formatting
+  - Better user experience for troubleshooting
+
+### 🐛 Bug Fixes
+
+#### **Implementation Issues**
+- **Fixed**: Original `manager.saveas()` implementation was incomplete
+- **Fixed**: Inconsistent error handling across saveas functions
+- **Fixed**: Missing parameter validation in original implementation
+- **Fixed**: Unclear error messages for debugging
+
+### ⚠️ Known Issues
+
+#### **Current Limitations**
+- `manager.newsaveas()` only supports Sound instances currently
+- Other instance types (video, model, script) return "coming soon" messages
+- Function may not be exposed through manager object yet (check separate file)
+- Debug mode may not work on all executors
+
+### 📋 Coming Soon
+
+#### **Planned Improvements**
+- Full implementation of video, model, and script instance support
+- Integration of newsaveas into main manager object
+- Enhanced cross-executor compatibility
+- Additional debugging features
+
+### 🔄 Migration Guide
+
+#### **For Users of `manager.saveas()`**
+```lua
+-- OLD WAY (deprecated)
+local result = manager.saveas("sounds/music.mp3", audioData, "Sound")
+-- Returns: "try using the new saveas: manager.newsaveas"
+
+-- NEW WAY (recommended)
+local result = manager.newsaveas("Sound", "sounds/music.mp3")
+-- Returns: "file saved successfully at path: sounds/music.mp3"
+
+-- WITH DEBUG MODE
+local result = manager.newsaveas("Sound", "sounds/music.mp3", true)
+-- Returns detailed error information if something goes wrong
+```
+
+#### **Parameter Changes**
+- **Old**: `manager.saveas(path, content, type)`
+- **New**: `manager.newsaveas(instance, path, moredebug)`
+- **Note**: Parameter order changed, content parameter removed, debug parameter added
+
+### 🧪 Testing
+
+#### **New Test Coverage**
+- Deprecated function error message testing
+- New function parameter validation
+- Debug mode error reporting
+- Error message consistency validation
+
+#### **Migration Testing**
+- Backward compatibility validation
+- Error message accuracy testing
+- Debug mode functionality testing
+
+---
+
 ## [1.2.2] - 1 Oct 2025 *very very spooky, boo*
 
 ### 🎯 New Features

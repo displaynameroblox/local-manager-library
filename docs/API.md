@@ -187,13 +187,13 @@ local result = manager.dfile("config.json", true, "config.json.undo")
 -- Returns: "file restored successfully from undo backup"
 ```
 
-### `manager.saveas(path, content, type)` ⚠️ EXPERIMENTAL
+### `manager.saveas(path, content, type)` ⚠️ DEPRECATED
 
-**[EXPERIMENTAL FEATURE]** Saves content as a specific type of instance (Sound, Model, etc.) in the game environment. This feature creates both file data and game instances for advanced media handling.
+**[DEPRECATED FUNCTION]** This function has been deprecated and now returns an error message directing users to use the new implementation.
 
-**⚠️ Warning:** This is an experimental function that depends heavily on executor capabilities. Some features may not work on all executors, and behavior may vary between different execution environments.
+**⚠️ Warning:** This function is no longer functional and will always return an error message.
 
-**NEW FIX COMING SOON** a new fix for every issues within this function!
+**Current Behavior:** Always returns `"try using the new saveas: manager.newsaveas"`
 
 **Signature:**
 ```lua
@@ -210,74 +210,101 @@ function manager.saveas(path: string, content: string|table|userdata, type: stri
 **Returns:**
 | Type | Description |
 |------|-------------|
-| `string` | Success message or error description |
-
-**Supported Types:**
-- `"Sound"` - Creates a Sound instance (IMPLEMENTED - experimental)
-- `"Model"` - Creates a Model instance (IMPLEMENTED - highly experimental)
-- `"Script"` - Saves as script file (PLANNED - instance creation not yet implemented)
-- `"Image"` - Saves as image file (PLANNED - instance creation not yet implemented)
-
-**Type-Specific Content Requirements:**
-- **Sound**: `string` - Binary audio data (minimum 100 bytes)
-- **Model**: `table` or `userdata` - Model instance or table with model data
-- **Script**: `string` - Lua script source code
-- **Image**: `string` - Binary image data
-
-**Success Messages:**
-- `"file saved successfully as Sound: [filename] (instance created in game environment)"`
-- `"file saved successfully as Model: [filename] (EXPERIMENTAL - instance created in game environment)"`
-- `"file saved successfully as Script: [filename] (PLANNED FEATURE - instance creation not yet implemented)"`
-- `"file saved successfully as Image: [filename] (PLANNED FEATURE - instance creation not yet implemented)"`
+| `string` | Always returns `"try using the new saveas: manager.newsaveas"` |
 
 **Error Messages:**
-- `"cannot save file, did you forget to add path?"` - When `path` is nil or empty
-- `"cannot save file without content"` - When `content` is nil or empty
-- `"cannot save file without type specification"` - When `type` is nil or empty
-- `"invalid file path format: [path]"` - When path format is invalid
-- `"unsupported save type: [type]"` - When type is not in supported types list
-- `"file already exists at path: [path]"` - When target file already exists
-- `"save type '[type]' is recognized but not yet implemented"` - When using a reserved type
-- `"invalid content type for [type]: expected [expected], got [actual]"` - When content type is wrong
-- `"content too small to be valid audio data (minimum 100 bytes required)"` - When audio data is too small
-- `"failed to write [type] file: [error]"` - When file writing fails
-- `"failed to create custom asset for audio: [error]"` - When custom asset creation fails
-- `"failed to create [Type] instance: [error]"` - When instance creation fails
+- `"try using the new saveas: manager.newsaveas"` - Always returned (deprecated function)
 
-**Example - Save Sound File:**
+**Example - Deprecated Function:**
 ```lua
--- Read an audio file
-local audioData = readfile("audio.mp3")
-
--- Save it as a Sound instance
+-- This function is deprecated and always returns an error message
 local result = manager.saveas("sounds/music.mp3", audioData, "Sound")
--- Returns: "file saved successfully as Sound: music.mp3 (instance created in game environment)"
+-- Returns: "try using the new saveas: manager.newsaveas"
+
+-- Note: Use manager.newsaveas instead (when implemented)
 ```
 
-**Example - Save Model File:**
+### `manager.newsaveas(instance, path, moredebug)` ⚠️ EXPERIMENTAL
+
+**[EXPERIMENTAL FEATURE]** The new implementation of saveas functionality. This function is designed to replace the deprecated `manager.saveas` function with improved error handling and debugging capabilities.
+
+**⚠️ Warning:** This function is currently under development and may not be fully implemented in the main library yet.
+
+**Signature:**
 ```lua
--- Save a model instance
-local modelInstance = game.Workspace:FindFirstChild("MyModel")
-if modelInstance then
-    local result = manager.saveas("models/saved_model.rbxl", modelInstance, "Model")
-    -- Returns: "file saved successfully as Model: saved_model.rbxl (EXPERIMENTAL - instance created in game environment)"
-end
+function manager.newsaveas(instance: string, path: string, moredebug: boolean?): string
+```
+
+**Parameters:**
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `instance` | `string` | ✅ | Type of instance to create ("Sound", "video", "model", "script") |
+| `path` | `string` | ✅ | File path where to save the instance |
+| `moredebug` | `boolean` | ❌ | Enable debug mode for detailed error messages |
+
+**Returns:**
+| Type | Description |
+|------|-------------|
+| `string` | Success message or error description |
+
+**Supported Instance Types:**
+- `"Sound"` - Creates a Sound instance (IMPLEMENTED - experimental)
+- `"video"` - Video handling (COMING SOON)
+- `"model"` - Model handling (COMING SOON)
+- `"script"` - Script handling (COMING SOON)
+
+**Success Messages:**
+- `"file saved successfully at path: [path]"` - File saved successfully
+
+**Error Messages:**
+- `"cannot saveas, did you forget to add instance?."` - When `instance` is nil or empty
+- `"cannot saveas, did you forget to add instance?. instance found: [instance] path found: [path]"` - Debug mode version
+- `"cannot saveas, file already exists at path"` - When target file already exists
+- `"cannot saveas, file already exists at path: [path]data found[data]"` - Debug mode version
+- `"file already exists, cannot overwire file"` - When trying to overwrite existing file
+- `"cannot saveas, more coming soon![path],[debug]"` - When using unsupported instance types
+- `"failed to save file at path"` - When file saving fails
+- `"failed to save file at path: [path]error: [error]"` - Debug mode version
+
+**Example - Basic Usage:**
+```lua
+-- Save a Sound instance
+local result = manager.newsaveas("Sound", "sounds/music.mp3")
+-- Returns: "file saved successfully at path: sounds/music.mp3"
+```
+
+**Example - With Debug Mode:**
+```lua
+-- Save with debug information
+local result = manager.newsaveas("Sound", "sounds/music.mp3", true)
+-- Returns detailed error messages if something goes wrong
 ```
 
 **Example - Error Handling:**
 ```lua
--- Try to save with unsupported type
-local result = manager.saveas("test.txt", "content", "InvalidType")
--- Returns: "unsupported save type: InvalidType. Supported types: Sound (implemented), Model (planned), Script (planned), Image (planned)"
+-- Try with missing instance type
+local result = manager.newsaveas(nil, "test.mp3")
+-- Returns: "cannot saveas, did you forget to add instance?."
 
--- Try to save with wrong content type
-local result = manager.saveas("test.mp3", 123, "Sound")
--- Returns: "invalid content type for Sound: expected string, got number"
-
--- Try to save to existing file
-local result = manager.saveas("existing.mp3", audioData, "Sound")
--- Returns: "file already exists at path: existing.mp3"
+-- Try with unsupported type
+local result = manager.newsaveas("video", "test.mp4")
+-- Returns: "cannot saveas, more coming soon!test.mp4,false"
 ```
+
+**Implementation Notes:**
+- ⚠️ EXPERIMENTAL IMPLEMENTATION
+- Currently only supports Sound instances
+- Uses `writecustomasset` for Sound creation (Wave executor specific)
+- Debug mode provides detailed error information
+- Other instance types are planned but not yet implemented
+- Function may not be available in main library yet (check separate saveas.lua file)
+
+**Known Limitations:**
+1. Only Sound instances are currently implemented
+2. May not be exposed through manager object yet
+3. Debug mode may not work on all executors
+4. Custom asset creation is executor-dependent
+5. Other instance types are not yet supported
 
 ### `manager.checkSaveasCapabilities()`
 
