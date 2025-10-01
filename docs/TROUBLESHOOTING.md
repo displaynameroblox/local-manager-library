@@ -1,4 +1,5 @@
 # 🔧 Troubleshooting Guide - Local Manager Library
+# remember, you won't get any error codes while using the library, e*rror codes coming soon*
 
 Complete troubleshooting guide for resolving issues with the Local Manager Library.
 
