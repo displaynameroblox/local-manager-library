@@ -1,4 +1,4 @@
-````markdown
+```markdown
 # Changelog
 
 All notable changes to the Local Manager Library will be documented in this file.

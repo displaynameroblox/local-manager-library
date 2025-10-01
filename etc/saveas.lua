@@ -37,7 +37,47 @@ function saveas.newsaveas(instance, path, moredebug)
                                     return "unknown error. file found: "..tostring(file)..", instance:"..tostring(instance)
                                 end
                             end
-                        elseif instance == "video" or instance == "model" or instance == "script" then
+                        elseif instance == "script" then
+                            if path and instance and tobesaved then
+                                local worte1 = pcall(function()
+                                    if tobesaved == nil or not tobesaved or instance == nil or not instance then
+                                        return "cannot save a nil!"
+                                    elseif tobesaved and instance then
+                                        if isfile(path) then
+                                            return "cannot saveas, file already exists"
+                                        elseif not isfile(path) then 
+                                            local success1 = pcall(function()
+                                                if path ~= ".lua" then
+                                                writefile(path, tobesaved)
+                                                else
+                                                    writefile(path..".lua", tobesaved)
+                                                end
+                                            end)
+                                            if success1 then
+                                                if debug then
+                                                    return "successfully saved file in path: "..tostring(path).."with: "..tostring(tobesaved.name)
+                                                else
+                                                    return "successfully saved file"
+                                                end
+                                            elseif not success1 then
+                                                if debug then
+                                                    return "unknown error. path found: "..tostring(path).." instance: "..tostring(tobesaved.name)
+                                                else
+                                                    return "unknown error"
+                                                end
+                                            end
+                                        end
+                                    end
+                                end)
+                                if worte1 then
+                                    if debug then
+                                        return "saved file in: "..tostring(path)
+                                    else
+                                        return "successfully saved file!"
+                                    end
+                                end
+                            end
+                        elseif instance == "video" or instance == "model" or then
                             if debug then
                                 return "cannot saveas, more coming soon!"..tonumber(path)..","..tostring(debug) -- coming soon thingy
                             end
