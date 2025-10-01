@@ -193,6 +193,8 @@ local result = manager.dfile("config.json", true, "config.json.undo")
 
 **⚠️ Warning:** This is an experimental function that depends heavily on executor capabilities. Some features may not work on all executors, and behavior may vary between different execution environments.
 
+**NEW FIX COMING SOON** a new fix for every issues within this function!
+
 **Signature:**
 ```lua
 function manager.saveas(path: string, content: string|table|userdata, type: string): string

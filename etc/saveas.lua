@@ -25,13 +25,21 @@ function saveas.newsaveas(instance, path, moredebug)
                 elseif not isfile(path) then
                     local worte, err = pcall(function()
                         if instance == "Sound" then
-                            local file = writefile(path..".mp3",nil)
+                            if isfile(path) then
+                                return "file already exists, cannot overwire file"
+                            else
+                                local file = writefile(path..".mp3",nil)
+                            end
                             if isfile(file) then
                                 writecustomasset(file, instance) -- only on wave, i think
                             else
                                 if debug then
                                     return "unknown error. file found: "..tostring(file)..", instance:"..tostring(instance)
                                 end
+                            end
+                        elseif instance == "video" or instance == "model" or instance == "script" then
+                            if debug then
+                                return "cannot saveas, more coming soon!"..tonumber(path)..","..tostring(debug) -- coming soon thingy
                             end
                         end
                         return "file saved successfully at path: " .. tostring(path)
