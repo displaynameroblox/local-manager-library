@@ -394,3 +394,4 @@ local audioFolder = scriptFolder:FindFirstChild("Audio")
 ---
 
 **Note**: This changelog follows semantic versioning. Version 1.2.0 represents a minor version with new features and improvements while maintaining backward compatibility for most existing functionality.
+```
