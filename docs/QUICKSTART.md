@@ -128,17 +128,19 @@ manager.media(nil, "audio", "audio", true, "music")
 ### 6. Save Media as Instances (EXPERIMENTAL)
 
 ```lua
--- Check if saveas is supported before using
-local capabilities = manager.checkSaveasCapabilities()
+-- Load the new saveas module
+local saveas = loadstring(readfile("etc/saveas.lua"))()
+-- Use the new saveas function
+local result = saveas.newsaveas("Sound", "sounds/music.mp3")
 
-if capabilities.Sound then
-    -- Save audio file as Sound instance
-    local audioData = readfile("music.mp3")
-    local result = manager.saveas("sounds/music.mp3", audioData, "Sound")
-    print("Save result:", result)
-else
-    print("❌ Sound saving not supported on this executor")
-end
+print("Save result:", result)
+
+-- With debug mode for detailed error information
+local result = saveas.newsaveas("Sound", "sounds/music.mp3", true)
+print("Save result:", result)
+
+-- Note: The old manager.saveas() is deprecated and returns an error message
+-- directing users to use manager.newsaveas (which is in development)
 ```
 
 ## 🔧 System Check
@@ -211,7 +213,7 @@ You now know the basics of the Local Manager Library. Start building amazing thi
 | `manager.download()` | Download from URL | `manager.download("https://example.com/file.txt", "local.txt", "GET")` |
 | `manager.html()` | Load HTML or convert to GUI | `manager.html(nil, true, "page.html", true)` |
 | `manager.media()` | Play audio files | `manager.media("song.mp3", "audio", "audio", false)` |
-| `manager.saveas()` | Save as instance (EXPERIMENTAL) | `manager.saveas("audio.mp3", data, "Sound")` |
+| `saveas.newsaveas()` | Save as instance (EXPERIMENTAL) | `saveas.newsaveas("Sound", "audio.mp3")` |
 | `manager.getScriptFolder()` | Get scriptfolder | `manager.getScriptFolder()` |
 | `manager.nodefecth()` | Check system capabilities | `manager.nodefecth()` |
 
