@@ -232,8 +232,12 @@ local audioFolder = scriptFolder:FindFirstChild("Audio")
 - Enhanced Model saving capabilities
 - Batch operations for media files
 - Advanced HTML parsing and GUI conversion
+<<<<<<< HEAD
 - Plugin system for custom save types
 - Proper Java to Lua conversion with AST transformation
+=======
+- java to lua "don't ask me how i'm gonna do it"    
+>>>>>>> f64b8f2d203c156ecb8bfe848c947843dc6811eb
 
 #### **Improvements**
 - Performance optimizations
