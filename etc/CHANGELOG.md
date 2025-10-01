@@ -1,9 +1,32 @@
+````markdown
 # Changelog
 
 All notable changes to the Local Manager Library will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [1.2.2] - 1 Oct 2025
+
+### 🎯 New Features
+- Added experimental Java to Lua conversion function (`manager.javatolua`)
+  - Basic Java syntax validation
+  - Placeholder conversion framework
+  - Execution capability for converted code
+  - Error handling and validation
+  - Documentation and examples
+
+### ⚠️ Known Issues
+- Java to Lua conversion is currently a placeholder
+- Non-execution mode not yet implemented
+- Limited Java syntax recognition
+- No actual code transformation
+
+### 📋 Coming Soon
+- Proper Java parsing and AST transformation
+- Non-execution mode for conversion only
+- Enhanced Java syntax support
+- Better error reporting and debugging
 
 ## [1.2.1] - 30 Sep 2025
 
@@ -210,7 +233,7 @@ local audioFolder = scriptFolder:FindFirstChild("Audio")
 - Batch operations for media files
 - Advanced HTML parsing and GUI conversion
 - Plugin system for custom save types
-- java to lua "don't ask me how i'm gonna do it"    
+- Proper Java to Lua conversion with AST transformation
 
 #### **Improvements**
 - Performance optimizations
