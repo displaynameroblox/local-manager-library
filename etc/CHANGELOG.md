@@ -5,6 +5,205 @@ All notable changes to the Local Manager Library will be documented in this file
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.5] - 2 Oct 2025 *experimental saveas improvements and main library integration*
+
+### 🚀 Major Integration Update
+
+#### **Model and Image Saving Added to Main Library**
+- **Integrated**: Model and Image saving functionality into main `manager.newsaveas()` function
+- **Status**: Model and Image saving now available in production library
+- **Error Handling**: Full comprehensive error handling from experimental implementation
+- **Compatibility**: Maintains backward compatibility with existing Sound and Script saving
+
+#### **Enhanced Main Library Functionality**
+- **New Supported Types**: Model (.rbxl/.rbxlx) and Image (.png/.jpg/.jpeg/.gif/.bmp/.tiff/.ico)
+- **Production Ready**: Model and Image saving moved from experimental to production
+- **Comprehensive Validation**: Full input validation and error handling
+- **Debug Mode**: Enhanced debug mode for troubleshooting
+
+### 🔧 Function Updates
+
+#### **manager.newsaveas() Enhancements**
+- **Model Saving**: Full Model instance saving with workspace cleanup
+- **Image Saving**: Support for ImageLabel, ImageButton, Decal, and Texture instances
+- **Error Handling**: Comprehensive error handling for all instance types
+- **File Format Support**: Extended file format support for models and images
+
+#### **Supported Instance Types (Main Library)**
+- ✅ **Sound**: Working (integrated)
+- ✅ **Script**: Working (integrated)
+- ✅ **Model**: Working (newly integrated with error handling)
+- ✅ **Image**: Working (newly integrated with error handling)
+- 🚧 **Video**: Work in Progress (experimental file only)
+
+### 📋 Error Handling Integration
+
+#### **Model Saving Error Messages**
+- `"failed to save model: tobesaved is not a Model instance"`
+- `"failed to save model: invalid file format"`
+- `"failed to create save folder: [error]"`
+- `"failed to clone model: [error]"`
+- `"failed to setup cloned model: [error]"`
+- `"failed to save model file to path: [path] error: [error]"`
+
+#### **Image Saving Error Messages**
+- `"failed to save image: tobesaved is not a valid image instance"`
+- `"failed to save image: invalid file format"`
+- `"failed to save image: no image content found"`
+- `"failed to save image file to path: [path] error: [error]"`
+
+### 📚 Documentation Updates
+
+#### **QUICKSTART.md Updates**
+- **Section 6**: Updated to include Model and Image saving examples
+- **Quick Reference**: Updated table to reflect new capabilities
+- **Examples**: Added practical examples for Model and Image saving
+- **Status**: Removed experimental designation for Model/Image saving
+
+#### **Usage Examples**
+```lua
+-- Model saving (now in main library)
+local myModel = workspace:FindFirstChild("MyModel")
+if myModel and myModel:IsA("Model") then
+    local result = manager.newsaveas("model", "models/my_model.rbxl", true)
+end
+
+-- Image saving (now in main library)
+local myImage = workspace:FindFirstChild("MyImage")
+if myImage and myImage:IsA("ImageLabel") then
+    local result = manager.newsaveas("image", "images/my_image.png", true)
+end
+```
+
+### 🧪 Development Structure
+
+#### **Production Library (Main)**
+- `manager.newsaveas()` - Sound, Script, Model, Image saving
+- Production-ready with comprehensive error handling
+- Stable and tested functionality
+
+#### **Experimental Library (Separate)**
+- `newsaveas.newsaveas()` - All types including Video (WIP)
+- Development and testing for upcoming features
+- Video saving still work in progress
+
+### 🔄 Migration Notes
+
+#### **For Users**
+- Model and Image saving now available directly through `manager.newsaveas()`
+- No need to load separate experimental module for Model/Image saving
+- Enhanced error handling and validation
+- Better debugging capabilities
+
+#### **For Developers**
+- Experimental file still available for Video saving development
+- Clear separation between production and experimental features
+- Easy testing of new features before integration
+
+
+---
+
+## [1.2.4] - 2 Oct 2025 *saveas development*
+
+### 🔧 Development Structure Changes
+
+#### **Separate Development File for Advanced Features**
+- **Added**: `etc/newsaveas.lua` - Separate development file for experimental saveas features
+  - Contains work-in-progress implementations for model and image saving
+  - Includes development helper functions and status tracking
+  - Marked experimental features clearly with 🚧 emoji indicators
+  - Provides detailed debug information for development testing
+
+#### **Enhanced Development Workflow**
+- **Main Library**: `manager.newsaveas()` - Production-ready Sound and Script saving
+- **Development File**: `newsaveas.newsaveas()` - Experimental Model, Image, and Video saving
+- **Clear Separation**: Production vs development features clearly distinguished
+- **Status Tracking**: Built-in development status reporting
+
+### 🚧 Work In Progress Features
+
+#### **Model Saving (Experimental)**
+- **Status**: 🚧 Work in Progress
+- **Planned Features**:
+  - Model instance creation in workspace
+  - Model data serialization and file saving
+  - Proper model format handling (.rbxl, .rbxlx)
+  - Model hierarchy preservation
+
+#### **Image Saving (Experimental)**
+- **Status**: 🚧 Work in Progress  
+- **Planned Features**:
+  - ImageLabel instance creation
+  - Image data handling (base64, file paths)
+  - Multiple image format support (.png, .jpg, .gif)
+  - Image processing and optimization
+
+#### **Video Saving (Experimental)**
+- **Status**: 🚧 Work in Progress
+- **Planned Features**:
+  - VideoFrame instance creation
+  - Video file format support
+  - Video data processing and compression
+  - Video playback integration
+
+### 📚 Documentation Updates
+
+#### **QUICKSTART.md Enhancements**
+- **Added**: Section 7 - Experimental Saveas Features
+- **Development Status**: Clear indicators for work-in-progress features
+- **Usage Examples**: Examples for experimental feature testing
+- **Quick Reference**: Updated table with experimental function reference
+
+#### **Development Guidelines**
+- **Clear Separation**: Production vs experimental features
+- **Status Tracking**: Built-in development status reporting
+- **Testing Framework**: Debug mode for development testing
+- **Progress Indicators**: Visual indicators for feature completion status
+
+### 🔄 Function Architecture
+
+#### **Production Functions (Main Library)**
+- `manager.newsaveas()` - Sound and Script saving (✅ Working)
+- Integrated into main library for production use
+- Stable and tested functionality
+
+#### **Development Functions (Separate File)**
+- `newsaveas.newsaveas()` - All saveas types including experimental
+- `newsaveas._saveasModel()` - Model saving development
+- `newsaveas._saveasImage()` - Image saving development  
+- `newsaveas._saveasVideo()` - Video saving development
+- `newsaveas.getDevelopmentStatus()` - Development status tracking
+
+### 🧪 Development Features
+
+#### **Enhanced Debugging**
+- **Debug Mode**: Detailed error information for all experimental features
+- **Status Reporting**: Real-time development status tracking
+- **Progress Indicators**: Visual progress indicators for feature development
+- **Error Handling**: Comprehensive error handling for experimental features
+
+#### **Testing Framework**
+- **Development Status**: Built-in status checking
+- **Feature Testing**: Easy testing of experimental features
+- **Debug Information**: Detailed debug output for development
+- **Progress Tracking**: Clear indication of what's working vs in development
+
+### 📋 Migration Notes
+
+#### **For Developers**
+- Use `etc/newsaveas.lua` for experimental feature development
+- Main library contains only production-ready features
+- Clear separation allows for independent development and testing
+- Debug mode provides detailed information for troubleshooting
+
+#### **For Users**
+- Production features available through `manager.newsaveas()`
+- Experimental features available through separate module
+- Clear status indicators show what's working vs in development
+- Easy testing of upcoming features
+
+---
+
 ## [1.2.3] - 2 Oct 2025 *saveas evolution*
 
 ### 🔄 Breaking Changes

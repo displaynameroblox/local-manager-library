@@ -125,22 +125,62 @@ end
 manager.media(nil, "audio", "audio", true, "music")
 ```
 
-### 6. Save Media as Instances (EXPERIMENTAL)
+### 6. Save Media as Instances
 
 ```lua
--- Load the new saveas module
-local saveas = loadstring(readfile("etc/saveas.lua"))()
--- Use the new saveas function
-local result = saveas.newsaveas("Sound", "sounds/music.mp3")
-
+-- Save a Sound instance
+local result = manager.newsaveas("Sound", "sounds/music.mp3")
 print("Save result:", result)
 
--- With debug mode for detailed error information
-local result = saveas.newsaveas("Sound", "sounds/music.mp3", true)
+-- Save with debug mode for detailed error information
+local result = manager.newsaveas("Sound", "sounds/music.mp3", true)
 print("Save result:", result)
 
--- Note: The old manager.saveas() is deprecated and returns an error message
--- directing users to use manager.newsaveas (which is in development)
+-- Save a script file with content
+local scriptContent = "print('Hello from saved script!')"
+local result = manager.newsaveas("script", "my_script", false, scriptContent)
+print("Script save result:", result)
+
+-- Save a Model instance (EXPERIMENTAL)
+local myModel = workspace:FindFirstChild("MyModel")
+if myModel and myModel:IsA("Model") then
+    local result = manager.newsaveas("model", "models/my_model.rbxl", true)
+    print("Model save result:", result)
+end
+
+-- Save an Image instance (EXPERIMENTAL)
+local myImage = workspace:FindFirstChild("MyImage")
+if myImage and myImage:IsA("ImageLabel") then
+    local result = manager.newsaveas("image", "images/my_image.png", true)
+    print("Image save result:", result)
+end
+
+-- Note: Model and Image saving are experimental features with comprehensive error handling
+```
+
+### 7. Experimental Saveas Features (WORK IN PROGRESS)
+
+```lua
+-- Load the experimental newsaveas module for advanced features
+local newsaveas = loadstring(readfile("etc/newsaveas.lua"))()
+
+-- Check development status
+local status = newsaveas.getDevelopmentStatus()
+print("Development Status:")
+for feature, status in pairs(status) do
+    print(feature .. ": " .. status)
+end
+
+-- Try experimental model saving (WORK IN PROGRESS)
+local result = newsaveas.newsaveas("model", "my_model", true)
+print("Model save result:", result) -- Will show work in progress message
+
+-- Try experimental image saving (WORK IN PROGRESS) 
+local result = newsaveas.newsaveas("image", "my_image.png", true)
+print("Image save result:", result) -- Will show work in progress message
+
+-- Note: These features are actively being developed!
+-- Check etc/newsaveas.lua for the latest updates and implementations
 ```
 
 ## 🔧 System Check
@@ -213,7 +253,8 @@ You now know the basics of the Local Manager Library. Start building amazing thi
 | `manager.download()` | Download from URL | `manager.download("https://example.com/file.txt", "local.txt", "GET")` |
 | `manager.html()` | Load HTML or convert to GUI | `manager.html(nil, true, "page.html", true)` |
 | `manager.media()` | Play audio files | `manager.media("song.mp3", "audio", "audio", false)` |
-| `saveas.newsaveas()` | Save as instance (EXPERIMENTAL) | `saveas.newsaveas("Sound", "audio.mp3")` |
+| `manager.newsaveas()` | Save as instance (Sound/Script/Model/Image) | `manager.newsaveas("Sound", "audio.mp3")` |
+| `newsaveas.newsaveas()` | Experimental saveas (Video WIP) | `newsaveas.newsaveas("video", "video.mp4")` |
 | `manager.getScriptFolder()` | Get scriptfolder | `manager.getScriptFolder()` |
 | `manager.nodefecth()` | Check system capabilities | `manager.nodefecth()` |
 

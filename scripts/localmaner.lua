@@ -1282,96 +1282,327 @@ function manager.createSampleHtmlGui()
     return manager._htmlToGuiInternal(sampleHtml)
 end
 
-function manager.saveas(path, content, type)
-    return "try using the new saveas: manager.newsaveas"
-end
 
 
--- Internal function to save Script instances (PLANNED)
-function manager._saveasScript(path, content, filename)
-    if type(content) ~= "string" then
-        return "invalid content type for Script: expected string, got " .. type(content)
+
+
+-- New saveas implementation - much better than the old one!
+function manager.newsaveas(instance, path, moredebug, content)
+    local tobesaved = instance
+    local debug = false
+    
+    -- Enable debug mode if requested
+    if moredebug then
+        debug = true
     end
-
-    -- For now, just save as a regular script file
-    local writeSuccess, writeError = pcall(function()
-        return writefile(path, content)
-    end)
-
-    if not writeSuccess then
-        return "failed to write script file: " .. tostring(writeError)
+    
+    -- Validate instance parameter
+    if tobesaved == nil or tobesaved == false or tobesaved == "" then
+        if debug then
+            return "cannot saveas, did you forget to add instance?. instance found: " .. tostring(tobesaved) .. " path found: " .. tostring(path)
+        else
+            return "cannot saveas, did you forget to add instance?."
+        end
     end
-
-    return "file saved successfully as Script: " ..
-        filename .. " (PLANNED FEATURE - instance creation not yet implemented)"
-end
-
--- Internal function to save Image instances (PLANNED)
-function manager._saveasImage(path, content, filename)
-    if type(content) ~= "string" then
-        return "invalid content type for Image: expected string, got " .. type(content)
+    
+    -- Validate path and instance parameters
+    if not path or not instance then
+        if debug then
+            return "cannot saveas, missing parameters. instance: " .. tostring(instance) .. " path: " .. tostring(path)
+        else
+            return "cannot saveas, missing required parameters"
+        end
     end
-
-    -- For now, just save as a regular image file
-    local writeSuccess, writeError = pcall(function()
-        return writefile(path, content)
-    end)
-
-    if not writeSuccess then
-        return "failed to write image file: " .. tostring(writeError)
+    
+    -- Check if file already exists
+    if isfile(path) then
+        if debug then
+            local data = readfile(path)
+            return "cannot saveas, file already exists at path: " .. tostring(path) .. " data found: " .. tostring(data)
+        else
+            return "cannot saveas, file already exists at path"
+        end
     end
-
-    return "file saved successfully as Image: " ..
-        filename .. " (PLANNED FEATURE - instance creation not yet implemented)"
-end
-
--- Helper function to check saveas capabilities
-function manager.checkSaveasCapabilities()
-    local capabilities = {
-        Sound = false,
-        Model = false,
-        Script = false,
-        Image = false,
-        InstanceCreation = false,
-        CustomAssets = false,
-        FileWriting = false
-    }
-
-    -- Test Instance creation
-    local instanceSuccess = pcall(function()
-        local testInstance = Instance.new("Sound")
-        testInstance:Destroy()
-        return true
+    
+    -- Handle different instance types
+    local success, result = pcall(function()
+        if instance == "Sound" then
+            -- Create Sound instance
+            local file = writefile(path .. ".mp3", "")
+            if isfile(file) then
+                writecustomasset(file, instance) -- only on wave, i think
+                return "file saved successfully at path: " .. tostring(path)
+            else
+                if debug then
+                    return "unknown error. file found: " .. tostring(file) .. ", instance: " .. tostring(instance)
+                else
+                    return "failed to create sound file"
+                end
+            end
+            
+        elseif instance == "script" then
+            -- Create script file
+            if not content then
+                if debug then
+                    return "script saving requires content parameter - use manager.newsaveas('script', path, moredebug, content)"
+                else
+                    return "script saving requires content parameter"
+                end
+            end
+            
+            local success1, err = pcall(function()
+                if content == nil or not content then
+                    return false, "cannot save nil content!"
+                end
+                
+                -- Add .lua extension if not present
+                local finalPath = path
+                if not path:match("%.lua$") then
+                    finalPath = path .. ".lua"
+                end
+                
+                writefile(finalPath, content)
+                return true, finalPath
+            end)
+            
+            if success1 then
+                if debug then
+                    return "successfully saved script file in path: " .. tostring(err) .. " with content length: " .. tostring(#content)
+                else
+                    return "successfully saved script file"
+                end
+            else
+                if debug then
+                    return "failed to save script file. path: " .. tostring(path) .. " error: " .. tostring(err)
+                else
+                    return "failed to save script file"
+                end
+            end
+            
+        elseif instance == "model" then
+            -- Model saving with comprehensive error handling
+            -- i was here i remeber, meow :3
+            
+            -- Validate that tobesaved is actually a Model
+            if not tobesaved or not tobesaved:IsA("Model") then
+                if debug then
+                    return "failed to save model: tobesaved is not a Model instance. Type: " .. tostring(tobesaved and tobesaved.ClassName or "nil")
+                else
+                    return "failed to save model: invalid model instance"
+                end
+            end
+            
+            -- Validate path format
+            if not path:match("%.rbxlx?$") then
+                if debug then
+                    return "failed to save model: invalid path format. Expected .rbxl or .rbxlx, got: " .. tostring(path)
+                else
+                    return "failed to save model: invalid file format"
+                end
+            end
+            
+            -- Create save folder with error handling
+            local savefolder, folderError = pcall(function()
+                local folder = Instance.new("Folder")
+                folder.Name = "savefolder"
+                folder.Parent = workspace
+                return folder
+            end)
+            
+            if not savefolder then
+                if debug then
+                    return "failed to create save folder: " .. tostring(folderError)
+                else
+                    return "failed to create save folder"
+                end
+            end
+            
+            local savefolder = folderError -- The actual folder instance
+            
+            -- Clone the model with error handling
+            local savemodel, cloneError = pcall(function()
+                return tobesaved:Clone()
+            end)
+            
+            if not savemodel then
+                savefolder:Destroy() -- Clean up folder
+                if debug then
+                    return "failed to clone model: " .. tostring(cloneError)
+                else
+                    return "failed to clone model"
+                end
+            end
+            
+            local savemodel = cloneError -- The actual cloned model
+            
+            -- Set up the cloned model
+            local setupSuccess, setupError = pcall(function()
+                savemodel.Parent = savefolder
+                savemodel.Name = "savemodel"
+            end)
+            
+            if not setupSuccess then
+                savefolder:Destroy() -- Clean up folder
+                savemodel:Destroy() -- Clean up model
+                if debug then
+                    return "failed to setup cloned model: " .. tostring(setupError)
+                else
+                    return "failed to setup cloned model"
+                end
+            end
+            
+            -- Save the model to file with error handling
+            local saveSuccess, saveError = pcall(function()
+                return writefile(path, savemodel)
+            end)
+            
+            -- Clean up workspace objects
+            pcall(function()
+                savefolder:Destroy()
+            end)
+            
+            if saveSuccess then
+                if debug then
+                    return "successfully saved model file in path: " .. tostring(path) .. " with model: " .. tostring(tobesaved.Name)
+                else
+                    return "successfully saved model file"
+                end
+            else
+                if debug then
+                    return "failed to save model file to path: " .. tostring(path) .. " error: " .. tostring(saveError)
+                else
+                    return "failed to save model file"
+                end
+            end
+            
+        elseif instance == "image" or instance == "ImageLabel" then
+            -- Image saving with comprehensive error handling
+            -- hey uh, i like cats i guess
+            
+            local availableimages = {
+                "ImageLabel",
+                "ImageButton",
+                "Decal",
+                "Texture",
+            }
+            local availableformats = {
+                "png",
+                "jpg", 
+                "jpeg",
+                "gif",
+                "bmp",
+                "tiff",
+                "ico",
+            }
+            
+            -- Validate that tobesaved is a valid image instance
+            local isValidImage = false
+            for _, imageType in ipairs(availableimages) do
+                if tobesaved and tobesaved:IsA(imageType) then
+                    isValidImage = true
+                    break
+                end
+            end
+            
+            if not isValidImage then
+                if debug then
+                    local typeInfo = tobesaved and tobesaved.ClassName or "nil"
+                    return "failed to save image: tobesaved is not a valid image instance. Type: " .. tostring(typeInfo) .. " (Expected: ImageLabel, ImageButton, Decal, or Texture)"
+                else
+                    return "failed to save image: invalid image instance"
+                end
+            end
+            
+            -- Validate path format
+            local isValidFormat = false
+            for _, format in ipairs(availableformats) do
+                if path:match("%." .. format .. "$") then
+                    isValidFormat = true
+                    break
+                end
+            end
+            
+            if not isValidFormat then
+                if debug then
+                    return "failed to save image: invalid file format. Expected: " .. table.concat(availableformats, ", ") .. " got: " .. tostring(path)
+                else
+                    return "failed to save image: invalid file format"
+                end
+            end
+            
+            -- Check if image has valid content
+            local hasImageContent = false
+            if tobesaved:IsA("ImageLabel") or tobesaved:IsA("ImageButton") then
+                hasImageContent = tobesaved.Image ~= "" and tobesaved.Image ~= nil
+            elseif tobesaved:IsA("Decal") or tobesaved:IsA("Texture") then
+                hasImageContent = tobesaved.Texture ~= "" and tobesaved.Texture ~= nil
+            end
+            
+            if not hasImageContent then
+                if debug then
+                    local contentField = (tobesaved:IsA("ImageLabel") or tobesaved:IsA("ImageButton")) and "Image" or "Texture"
+                    return "failed to save image: no image content found. " .. contentField .. " field is empty"
+                else
+                    return "failed to save image: no image content"
+                end
+            end
+            
+            -- Save the image with error handling
+            local saveSuccess, saveError = pcall(function()
+                -- Get the image content based on instance type
+                local imageContent = ""
+                if tobesaved:IsA("ImageLabel") or tobesaved:IsA("ImageButton") then
+                    imageContent = tobesaved.Image
+                elseif tobesaved:IsA("Decal") or tobesaved:IsA("Texture") then
+                    imageContent = tobesaved.Texture
+                end
+                
+                return writefile(path, imageContent)
+            end)
+            
+            if saveSuccess then
+                if debug then
+                    local imageType = tobesaved.ClassName
+                    local imageName = tobesaved.Name
+                    return "successfully saved image file in path: " .. tostring(path) .. " with " .. tostring(imageType) .. ": " .. tostring(imageName)
+                else
+                    return "successfully saved image file"
+                end
+            else
+                if debug then
+                    return "failed to save image file to path: " .. tostring(path) .. " error: " .. tostring(saveError)
+                else
+                    return "failed to save image file"
+                end
+            end
+            
+        elseif instance == "video" or instance == "VideoFrame" then
+            -- Video saving - still work in progress
+            if debug then
+                return "🚧 VIDEO SAVING - WORK IN PROGRESS! path: " .. tostring(path) .. ", debug: " .. tostring(debug) .. " - Coming soon!"
+            else
+                return "🚧 VIDEO SAVING - WORK IN PROGRESS! Coming soon!"
+            end
+            
+        else
+            -- Unsupported instance type
+            if debug then
+                return "unsupported instance type: " .. tostring(instance) .. " path: " .. tostring(path) .. " - Supported types: Sound, script, model, image, video"
+            else
+                return "unsupported instance type - Supported: Sound, script, model, image, video"
+            end
+        end
     end)
-    capabilities.InstanceCreation = instanceSuccess
-
-    -- Test custom asset creation (requires existing file)
-    local assetSuccess = pcall(function()
-        -- Try to get custom asset for a test file
-        local testPath = "test_asset.mp3"
-        writefile(testPath, "test audio data")
-        local asset = getcustomasset(testPath)
-        delfile(testPath)
-        return asset ~= nil
-    end)
-    capabilities.CustomAssets = assetSuccess
-
-    -- Test file writing
-    local writeSuccess = pcall(function()
-        writefile("test_write.txt", "test")
-        local exists = isfile("test_write.txt")
-        delfile("test_write.txt")
-        return exists
-    end)
-    capabilities.FileWriting = writeSuccess
-
-    -- Determine supported types based on capabilities
-    capabilities.Sound = capabilities.InstanceCreation and capabilities.CustomAssets and capabilities.FileWriting
-    capabilities.Model = capabilities.InstanceCreation and capabilities.FileWriting
-    capabilities.Script = capabilities.FileWriting
-    capabilities.Image = capabilities.FileWriting
-
-    return capabilities
+    
+    if success then
+        return result
+    else
+        if debug then
+            return "failed to save file at path: " .. tostring(path) .. " error: " .. tostring(result)
+        else
+            return "failed to save file at path"
+        end
+    end
 end
 
 -- alright i might do the most silly thing ever, java to lua function, :p
