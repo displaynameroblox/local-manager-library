@@ -5,7 +5,7 @@
 -- Current Status:
 -- - Sound saving: ✅ Working (integrated into main library)
 -- - Script saving: ✅ Working (integrated into main library) 
--- - Model saving: experimental
+-- - Model saving: Done mostly <-- do not trust this man its not done still experimental!
 -- - Image saving: experimental
 -- - video saving: work in progress
 --
@@ -362,16 +362,55 @@ end
 
 -- Experimental function for video saving (WORK IN PROGRESS)
 function newsaveas._saveasVideo(videoData, path, debug)
-    -- TODO: Implement video saving
-    -- This function will handle:
-    -- 1. Video format detection
-    -- 2. VideoFrame creation
-    -- 3. Video data processing
-    
-    if debug then
-        return "🚧 _saveasVideo - WORK IN PROGRESS! videoData length: " .. tostring(#videoData) .. " path: " .. tostring(path)
-    else
-        return "🚧 Video saving is work in progress!"
+    if not videoData then
+        if debug then
+            return "cannot saveas, did you forget to add video data?. video found: "..tostring(videoData.Name) or tostring(videoData)
+        else
+            return "cannot saveas, did you to add video?"
+        end
+    elseif not path then
+        if debug then
+            return "cannot saveas, did you forget to add path?. path found was: "..tostring(path)
+        end
+    end
+    if path and videoData then
+        if videoData:IsA("video") or videoData:IsA("VideoFrame") then
+            local success2, writeError1 = pcall(function()
+                local data = videoData
+                local videoformats ={
+                    ".mp4",
+                    ".mov",
+                    ".avi",
+                    ".mkv" -- alright who the fuck do uses these
+                }
+                if path:match("%"..videoformats) then
+                    local videoid = videoData or getcustomasset(videoData) or data 
+                    local tobesaved1 = instance.new("VideoFrame", workspace)
+                    tobesaved1.Name = videoData.Name or path
+                    tobesaved1.id = videoid
+                    if tobesaved1 then
+                        local saved1 = pcall(function()
+                            local newfile = writefile(path, nil)
+                            local videoitself = tobesaved1 or videoData or videoid
+                            local tobereturned = writecustomasset(newfile, videoitself)
+                            return tobereturned, tobesaved1
+                        end)
+                    end
+                end
+            end)
+            if success2 then
+                if debug then 
+                    return "successfully saved file in path:"..tostring(path)
+                else
+                    return "successfully saved file!"
+                end
+            elseif writeError1 then
+                if debug then 
+                    return "failed to save file, error: "..tostring(writeError1).."path: "..tostring(path)
+                else
+                    return "failed to save file"
+            end
+        end
     end
 end
 

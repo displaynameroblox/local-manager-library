@@ -548,37 +548,37 @@ function manager.changefile(path, newdata)
     elseif not newdata then
         return "cannot changefile, did you forget to add newdata?: " .. newdata
     end
-    
+
     -- Check if file exists
     local fileExists = pcall(function()
         return isfile(path)
     end)
-    
+
     if not fileExists then
         return "file not found: " .. path
     end
-    
+
     -- Read the old data first
     local readSuccess, oldContent = pcall(function()
         return readfile(path)
     end)
-    
+
     if not readSuccess then
         return "failed to read file: " .. tostring(oldContent)
     end
-    
+
     -- Store old data for return
     oldata = oldContent
-    
+
     -- Write the new data
     local writeSuccess, writeError = pcall(function()
         writefile(path, newdata)
     end)
-    
+
     if not writeSuccess then
         return "failed to write new data: " .. tostring(writeError)
     end
-    
+
     -- Return success message with old data
     return "file changed successfully", oldata
 end
@@ -1282,29 +1282,26 @@ function manager.createSampleHtmlGui()
     return manager._htmlToGuiInternal(sampleHtml)
 end
 
-
-
-
-
 -- New saveas implementation - much better than the old one!
 function manager.newsaveas(instance, path, moredebug, content)
     local tobesaved = instance
     local debug = false
-    
+
     -- Enable debug mode if requested
     if moredebug then
         debug = true
     end
-    
+
     -- Validate instance parameter
     if tobesaved == nil or tobesaved == false or tobesaved == "" then
         if debug then
-            return "cannot saveas, did you forget to add instance?. instance found: " .. tostring(tobesaved) .. " path found: " .. tostring(path)
+            return "cannot saveas, did you forget to add instance?. instance found: " ..
+            tostring(tobesaved) .. " path found: " .. tostring(path)
         else
             return "cannot saveas, did you forget to add instance?."
         end
     end
-    
+
     -- Validate path and instance parameters
     if not path or not instance then
         if debug then
@@ -1313,7 +1310,7 @@ function manager.newsaveas(instance, path, moredebug, content)
             return "cannot saveas, missing required parameters"
         end
     end
-    
+
     -- Check if file already exists
     if isfile(path) then
         if debug then
@@ -1323,7 +1320,7 @@ function manager.newsaveas(instance, path, moredebug, content)
             return "cannot saveas, file already exists at path"
         end
     end
-    
+
     -- Handle different instance types
     local success, result = pcall(function()
         if instance == "Sound" then
@@ -1339,7 +1336,6 @@ function manager.newsaveas(instance, path, moredebug, content)
                     return "failed to create sound file"
                 end
             end
-            
         elseif instance == "script" then
             -- Create script file
             if not content then
@@ -1349,25 +1345,26 @@ function manager.newsaveas(instance, path, moredebug, content)
                     return "script saving requires content parameter"
                 end
             end
-            
+
             local success1, err = pcall(function()
                 if content == nil or not content then
                     return false, "cannot save nil content!"
                 end
-                
+
                 -- Add .lua extension if not present
                 local finalPath = path
                 if not path:match("%.lua$") then
                     finalPath = path .. ".lua"
                 end
-                
+
                 writefile(finalPath, content)
                 return true, finalPath
             end)
-            
+
             if success1 then
                 if debug then
-                    return "successfully saved script file in path: " .. tostring(err) .. " with content length: " .. tostring(#content)
+                    return "successfully saved script file in path: " ..
+                    tostring(err) .. " with content length: " .. tostring(#content)
                 else
                     return "successfully saved script file"
                 end
@@ -1378,20 +1375,20 @@ function manager.newsaveas(instance, path, moredebug, content)
                     return "failed to save script file"
                 end
             end
-            
         elseif instance == "model" then
             -- Model saving with comprehensive error handling
             -- i was here i remeber, meow :3
-            
+
             -- Validate that tobesaved is actually a Model
             if not tobesaved or not tobesaved:IsA("Model") then
                 if debug then
-                    return "failed to save model: tobesaved is not a Model instance. Type: " .. tostring(tobesaved and tobesaved.ClassName or "nil")
+                    return "failed to save model: tobesaved is not a Model instance. Type: " ..
+                    tostring(tobesaved and tobesaved.ClassName or "nil")
                 else
                     return "failed to save model: invalid model instance"
                 end
             end
-            
+
             -- Validate path format
             if not path:match("%.rbxlx?$") then
                 if debug then
@@ -1400,7 +1397,7 @@ function manager.newsaveas(instance, path, moredebug, content)
                     return "failed to save model: invalid file format"
                 end
             end
-            
+
             -- Create save folder with error handling
             local savefolder, folderError = pcall(function()
                 local folder = Instance.new("Folder")
@@ -1408,7 +1405,7 @@ function manager.newsaveas(instance, path, moredebug, content)
                 folder.Parent = workspace
                 return folder
             end)
-            
+
             if not savefolder then
                 if debug then
                     return "failed to create save folder: " .. tostring(folderError)
@@ -1416,14 +1413,14 @@ function manager.newsaveas(instance, path, moredebug, content)
                     return "failed to create save folder"
                 end
             end
-            
+
             local savefolder = folderError -- The actual folder instance
-            
+
             -- Clone the model with error handling
             local savemodel, cloneError = pcall(function()
                 return tobesaved:Clone()
             end)
-            
+
             if not savemodel then
                 savefolder:Destroy() -- Clean up folder
                 if debug then
@@ -1432,38 +1429,39 @@ function manager.newsaveas(instance, path, moredebug, content)
                     return "failed to clone model"
                 end
             end
-            
+
             local savemodel = cloneError -- The actual cloned model
-            
+
             -- Set up the cloned model
             local setupSuccess, setupError = pcall(function()
                 savemodel.Parent = savefolder
                 savemodel.Name = "savemodel"
             end)
-            
+
             if not setupSuccess then
                 savefolder:Destroy() -- Clean up folder
-                savemodel:Destroy() -- Clean up model
+                savemodel:Destroy()  -- Clean up model
                 if debug then
                     return "failed to setup cloned model: " .. tostring(setupError)
                 else
                     return "failed to setup cloned model"
                 end
             end
-            
+
             -- Save the model to file with error handling
             local saveSuccess, saveError = pcall(function()
                 return writefile(path, savemodel)
             end)
-            
+
             -- Clean up workspace objects
             pcall(function()
                 savefolder:Destroy()
             end)
-            
+
             if saveSuccess then
                 if debug then
-                    return "successfully saved model file in path: " .. tostring(path) .. " with model: " .. tostring(tobesaved.Name)
+                    return "successfully saved model file in path: " ..
+                    tostring(path) .. " with model: " .. tostring(tobesaved.Name)
                 else
                     return "successfully saved model file"
                 end
@@ -1474,11 +1472,10 @@ function manager.newsaveas(instance, path, moredebug, content)
                     return "failed to save model file"
                 end
             end
-            
         elseif instance == "image" or instance == "ImageLabel" then
             -- Image saving with comprehensive error handling
             -- hey uh, i like cats i guess
-            
+
             local availableimages = {
                 "ImageLabel",
                 "ImageButton",
@@ -1487,14 +1484,14 @@ function manager.newsaveas(instance, path, moredebug, content)
             }
             local availableformats = {
                 "png",
-                "jpg", 
+                "jpg",
                 "jpeg",
                 "gif",
                 "bmp",
                 "tiff",
                 "ico",
             }
-            
+
             -- Validate that tobesaved is a valid image instance
             local isValidImage = false
             for _, imageType in ipairs(availableimages) do
@@ -1503,16 +1500,17 @@ function manager.newsaveas(instance, path, moredebug, content)
                     break
                 end
             end
-            
+
             if not isValidImage then
                 if debug then
                     local typeInfo = tobesaved and tobesaved.ClassName or "nil"
-                    return "failed to save image: tobesaved is not a valid image instance. Type: " .. tostring(typeInfo) .. " (Expected: ImageLabel, ImageButton, Decal, or Texture)"
+                    return "failed to save image: tobesaved is not a valid image instance. Type: " ..
+                    tostring(typeInfo) .. " (Expected: ImageLabel, ImageButton, Decal, or Texture)"
                 else
                     return "failed to save image: invalid image instance"
                 end
             end
-            
+
             -- Validate path format
             local isValidFormat = false
             for _, format in ipairs(availableformats) do
@@ -1521,15 +1519,16 @@ function manager.newsaveas(instance, path, moredebug, content)
                     break
                 end
             end
-            
+
             if not isValidFormat then
                 if debug then
-                    return "failed to save image: invalid file format. Expected: " .. table.concat(availableformats, ", ") .. " got: " .. tostring(path)
+                    return "failed to save image: invalid file format. Expected: " ..
+                    table.concat(availableformats, ", ") .. " got: " .. tostring(path)
                 else
                     return "failed to save image: invalid file format"
                 end
             end
-            
+
             -- Check if image has valid content
             local hasImageContent = false
             if tobesaved:IsA("ImageLabel") or tobesaved:IsA("ImageButton") then
@@ -1537,16 +1536,17 @@ function manager.newsaveas(instance, path, moredebug, content)
             elseif tobesaved:IsA("Decal") or tobesaved:IsA("Texture") then
                 hasImageContent = tobesaved.Texture ~= "" and tobesaved.Texture ~= nil
             end
-            
+
             if not hasImageContent then
                 if debug then
-                    local contentField = (tobesaved:IsA("ImageLabel") or tobesaved:IsA("ImageButton")) and "Image" or "Texture"
+                    local contentField = (tobesaved:IsA("ImageLabel") or tobesaved:IsA("ImageButton")) and "Image" or
+                    "Texture"
                     return "failed to save image: no image content found. " .. contentField .. " field is empty"
                 else
                     return "failed to save image: no image content"
                 end
             end
-            
+
             -- Save the image with error handling
             local saveSuccess, saveError = pcall(function()
                 -- Get the image content based on instance type
@@ -1556,15 +1556,16 @@ function manager.newsaveas(instance, path, moredebug, content)
                 elseif tobesaved:IsA("Decal") or tobesaved:IsA("Texture") then
                     imageContent = tobesaved.Texture
                 end
-                
+
                 return writefile(path, imageContent)
             end)
-            
+
             if saveSuccess then
                 if debug then
                     local imageType = tobesaved.ClassName
                     local imageName = tobesaved.Name
-                    return "successfully saved image file in path: " .. tostring(path) .. " with " .. tostring(imageType) .. ": " .. tostring(imageName)
+                    return "successfully saved image file in path: " ..
+                    tostring(path) .. " with " .. tostring(imageType) .. ": " .. tostring(imageName)
                 else
                     return "successfully saved image file"
                 end
@@ -1575,25 +1576,26 @@ function manager.newsaveas(instance, path, moredebug, content)
                     return "failed to save image file"
                 end
             end
-            
         elseif instance == "video" or instance == "VideoFrame" then
             -- Video saving - still work in progress
             if debug then
-                return "🚧 VIDEO SAVING - WORK IN PROGRESS! path: " .. tostring(path) .. ", debug: " .. tostring(debug) .. " - Coming soon!"
+                return "🚧 VIDEO SAVING - WORK IN PROGRESS! path: " ..
+                tostring(path) .. ", debug: " .. tostring(debug) .. " - Coming soon!"
             else
                 return "🚧 VIDEO SAVING - WORK IN PROGRESS! Coming soon!"
             end
-            
         else
             -- Unsupported instance type
             if debug then
-                return "unsupported instance type: " .. tostring(instance) .. " path: " .. tostring(path) .. " - Supported types: Sound, script, model, image, video"
+                return "unsupported instance type: " ..
+                tostring(instance) ..
+                " path: " .. tostring(path) .. " - Supported types: Sound, script, model, image, video"
             else
                 return "unsupported instance type - Supported: Sound, script, model, image, video"
             end
         end
     end)
-    
+
     if success then
         return result
     else
@@ -1610,16 +1612,16 @@ end
 function manager.javatolua(scripted, doexecute)
     local execute = nil
     local scriptContent = nil
-    
+
     -- Input validation
     if not scripted then
         return "cannot find script, did you forget to add script?: " .. tostring(scripted)
     end
-    
+
     if not doexecute then
         return "cannot convert java to lua, did you forget to add doexecute parameter?: " .. tostring(doexecute)
     end
-    
+
     -- Validate script content
     local validationSuccess = pcall(function()
         if scripted and type(scripted) == "string" and #scripted > 0 then
@@ -1629,11 +1631,11 @@ function manager.javatolua(scripted, doexecute)
             return false
         end
     end)
-    
+
     if not validationSuccess then
         return "invalid script content, please provide a valid string"
     end
-    
+
     -- Attempt to compile the script
     local compileSuccess, compiledData = pcall(function()
         -- Note: This is a placeholder - actual Java to Lua conversion would require
@@ -1649,11 +1651,11 @@ function manager.javatolua(scripted, doexecute)
             return nil
         end
     end)
-    
+
     if not compileSuccess then
         return "failed to process script: " .. tostring(compiledData)
     end
-    
+
     -- Execute the converted script if requested
     if doexecute then
         local executeSuccess, executeResult = pcall(function()
@@ -1664,7 +1666,7 @@ function manager.javatolua(scripted, doexecute)
                 return "no compiled data to execute"
             end
         end)
-        
+
         if executeSuccess then
             return "java to lua conversion completed successfully", compiledData
         else
