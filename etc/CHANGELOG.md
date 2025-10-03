@@ -5,6 +5,166 @@ All notable changes to the Local Manager Library will be documented in this file
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] - 3 Oct 2025 *media function complete rewrite and enhanced error handling*
+
+### 🚀 Major Breaking Changes
+
+#### **Media Function Complete Overhaul**
+- **REPLACED**: Old `manager.media(path, type, typeofmedia, isfolder, folder)` function
+- **NEW**: `manager.media(_type, media, islocal, isroblox, debug)` - Complete rewrite with new parameter structure
+- **ENHANCED**: Comprehensive file format validation for all media types
+- **IMPROVED**: Better error handling with debug mode support
+- **INTEGRATED**: Support for both local files and Roblox assets
+
+#### **Function Signature Changes**
+- **OLD**: `manager.media(path, type, typeofmedia, isfolder, folder)`
+- **NEW**: `manager.media(_type, media, islocal, isroblox, debug)`
+- **NOTE**: Complete parameter restructure - all existing code must be updated
+
+### 🎯 New Features
+
+#### **Enhanced Media Type Support**
+- **Audio Files**: `.mp3`, `.acc`, `.wav`, `.ogg`, `.m4a` with format validation
+- **Video Files**: `.mp4`, `.mov`, `.avi`, `.wmv`, `.mkv` with format validation
+- **Image Files**: `.jpeg`, `.png`, `.gif`, `.webP` with format validation
+- **Document Files**: `.pdf`, `.doc`, `.txt`, `.rtf` with format validation
+
+#### **Dual Source Support**
+- **Local Files**: Support for local file system with `getcustomasset()`
+- **Roblox Assets**: Support for `rbxassetid://` URLs
+- **Automatic Detection**: Validates asset IDs and file paths appropriately
+
+#### **Advanced Error Handling**
+- **File Format Validation**: Automatic validation of file extensions against supported formats
+- **Debug Mode**: Detailed error messages with parameter information
+- **Input Validation**: Comprehensive parameter validation with specific error messages
+- **Error Codes**: 20+ new error codes added to TROUBLESHOOTING.md
+
+#### **Instance Creation**
+- **Sound Instances**: Creates Sound instances for audio files
+- **VideoFrame Instances**: Creates VideoFrame instances for video files
+- **ImageLabel Instances**: Creates ImageLabel instances for image files
+- **TextLabel Instances**: Creates TextLabel instances for document files
+- **Workspace Integration**: All instances created in game.Workspace
+
+### 🔧 Function Updates
+
+#### **manager.media() Complete Rewrite**
+- **NEW**: Uses enhanced parameter structure with `_type`, `media`, `islocal`, `isroblox`, `debug`
+- **ENHANCED**: File format validation with `isValidFileExtension()` helper function
+- **IMPROVED**: Better error handling with debug mode support
+- **ADDED**: Support for both local files and Roblox assets
+- **INTEGRATED**: Automatic instance creation for all media types
+
+#### **Error Handling System**
+- **COMPREHENSIVE**: 20+ new error codes for media operations
+- **DEBUG MODE**: Detailed error messages with parameter information
+- **VALIDATION**: Input parameter validation with specific error messages
+- **FORMAT CHECKING**: File extension validation against supported formats
+
+### 📚 Documentation Updates
+
+#### **API.md Complete Rewrite**
+- **Media Operations**: Complete rewrite of media function documentation
+- **New Parameters**: Updated parameter structure and descriptions
+- **Error Messages**: Comprehensive error message documentation
+- **Examples**: Updated examples for new function signature
+- **File Format Support**: Detailed file format support documentation
+
+#### **TROUBLESHOOTING.md Enhanced**
+- **Error Codes**: Added 20+ new error codes for media operations
+- **Debug Mode**: Documentation for debug mode error messages
+- **File Format Issues**: Troubleshooting for file format validation
+- **Parameter Validation**: Troubleshooting for parameter validation errors
+
+### 🐛 Bug Fixes
+
+#### **Critical Fixes**
+- **FIXED**: Old media function parameter confusion and validation issues
+- **FIXED**: Missing file format validation in original implementation
+- **FIXED**: Inconsistent error handling across media types
+- **FIXED**: Missing support for Roblox assets in original function
+- **FIXED**: Poor error messages and debugging information
+
+#### **Function Integration Fixes**
+- **FIXED**: Media function integration with new parameter structure
+- **FIXED**: Error code consistency and TROUBLESHOOTING.md references
+- **FIXED**: File format validation implementation
+- **FIXED**: Instance creation and workspace integration
+
+### ⚠️ Breaking Changes
+
+#### **Function Signature Changes**
+- **OLD**: `manager.media(path, type, typeofmedia, isfolder, folder)`
+- **NEW**: `manager.media(_type, media, islocal, isroblox, debug)`
+- **NOTE**: Complete parameter restructure - all existing code must be updated
+
+#### **Parameter Changes**
+- **OLD**: `path` (string), `type` (string), `typeofmedia` (string), `isfolder` (boolean), `folder` (string)
+- **NEW**: `_type` (string), `media` (string), `islocal` (boolean), `isroblox` (boolean), `debug` (boolean)
+- **NOTE**: Parameter order and names completely changed
+
+#### **Return Value Changes**
+- **OLD**: Returns success message and optional instance
+- **NEW**: Returns media instance directly or error message
+- **NOTE**: Return value structure changed
+
+### 🔄 Migration Guide
+
+#### **For Media Function Users**
+```lua
+-- OLD WAY (deprecated)
+local result, soundInstance = manager.media("song.mp3", "audio", "audio", false)
+local result = manager.media(nil, "audio", "audio", true, "music")
+
+-- NEW WAY (required)
+local soundInstance = manager.media("Audio", "song.mp3", true, false)
+local soundInstance = manager.media("Audio", "rbxassetid://123456789", false, true)
+
+-- WITH DEBUG MODE
+local result = manager.media("Audio", "song.mp3", true, false, true)
+```
+
+#### **Parameter Mapping**
+- `path` → `media` (file path or Roblox asset ID)
+- `type` → `_type` (media type: "Audio", "Video", "Image", "Document")
+- `typeofmedia` → removed (consolidated into `_type`)
+- `isfolder` → removed (folder support removed in new implementation)
+- `folder` → removed (folder support removed in new implementation)
+- `debug` → new parameter for detailed error messages
+
+### 🧪 Testing
+
+#### **New Test Coverage**
+- File format validation testing
+- Parameter validation testing
+- Debug mode error message testing
+- Local file and Roblox asset testing
+- Instance creation testing
+
+#### **Enhanced Error Handling Testing**
+- File format validation error handling
+- Parameter validation error handling
+- Debug mode error message consistency
+- Input sanitization and validation
+
+### 🔮 Future Plans (v2.2+)
+
+#### **Planned Features**
+- Folder media playback support
+- Advanced media controls (volume, playback position)
+- Media metadata extraction
+- Batch media operations
+- Media conversion utilities
+
+#### **Improvements**
+- Performance optimizations for large media files
+- Enhanced error recovery options
+- Better cross-executor compatibility
+- Advanced media validation
+
+---
+
 ## [2.0.0] - 3 Oct 2025 *major html parser overhaul and function restructuring*
 
 ### 🚀 Major Breaking Changes

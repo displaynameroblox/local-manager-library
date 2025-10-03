@@ -560,106 +560,137 @@ local result = manager.createSampleHtmlGui()
 
 ## Media Operations
 
-### `manager.media(path, type, typeofmedia, isfolder, folder)`
+### `manager.media(_type, media, islocal, isroblox, debug)` ✅ ENHANCED
 
-Handles media files including audio playback for single files or entire folders.
+Handles media files including audio, video, image, and document playback with enhanced error handling and file format validation.
+
+**⚠️ Enhanced:** Complete rewrite with new parameter structure, comprehensive file format validation, and improved error handling.
 
 **Signature:**
 ```lua
-function manager.media(path: string?, type: string, typeofmedia: string, isfolder: boolean?, folder: string?): (string, Instance?)
+function manager.media(_type: string, media: string, islocal: boolean, isroblox: boolean, debug: boolean?): Instance | string
 ```
 
 **Parameters:**
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `path` | `string` | ❌ | File path (ignored when `isfolder` is true) |
-| `type` | `string` | ✅ | Media type category |
-| `typeofmedia` | `string` | ✅ | Specific media type ("audio", "video", "image", "document") |
-| `isfolder` | `boolean` | ❌ | Whether to process a folder of files |
-| `folder` | `string` | ❌ | Folder path (required when `isfolder` is true) |
+| `_type` | `string` | ✅ | Media type ("Audio", "Video", "Image", "Document") |
+| `media` | `string` | ✅ | File path (for local) or Roblox asset ID (for Roblox) |
+| `islocal` | `boolean` | ✅ | Whether to load from local file |
+| `isroblox` | `boolean` | ✅ | Whether to load from Roblox asset ID |
+| `debug` | `boolean` | ❌ | Enable debug mode for detailed error messages |
 
 **Returns:**
 | Type | Description |
 |------|-------------|
-| `string` | Success message, error description, or file content |
-| `Instance?` | Media instance (Sound for audio, VideoFrame for video) - second return value |
+| `Instance` | Media instance (Sound, VideoFrame, ImageLabel, TextLabel) |
+| `string` | Error description with error codes (when debug enabled) |
 
 **Supported Media Types:**
-- `"audio"` - Audio files (.mp3, .wav, .ogg, .m4a, .aac)
-- `"video"` - Video files (**EXPERIMENTAL** - this is still experimental you may see errors)
-- `"image"` - Image files (returns content)
-- `"document"` - Document files (returns content)
+- ✅ `"Audio"` - Audio files (.mp3, .acc, .wav, .ogg, .m4a)
+- ✅ `"Video"` - Video files (.mp4, .mov, .avi, .wmv, .mkv)
+- ✅ `"Image"` - Image files (.jpeg, .png, .gif, .webP)
+- ✅ `"Document"` - Document files (.pdf, .doc, .txt, .rtf)
 
 **Success Messages:**
-- `"media played successfully"` - Single audio file played
-- `"video played successfully"` - Single video file played (**EXPERIMENTAL**)
-- `"played X/Y audio files from folder successfully"` - Folder playback results
-- Returns file content for non-audio/video media types
+- Returns media instance directly for successful operations
 
-**Error Messages:**
-- `"cannot handle media, did you forget to add path?"` - When `path` is nil or empty
-- `"cannot handle media, did you forget to add type?"` - When `type` is nil or empty
-- `"cannot handle media, did you forget to add typeofmedia?"` - When `typeofmedia` is nil or empty
-- `"invalid media type"` - When `typeofmedia` is not supported
-- `"failed to read video file"` - When video file cannot be read (**EXPERIMENTAL**)
-- `"failed to play video"` - When video playback fails (**EXPERIMENTAL**)
-- `"cannot handle media folder, did you forget to add folder path?"` - When folder path is missing
-- `"folder not found: [folder]"` - When specified folder doesn't exist
-- `"failed to list files in folder"` - When folder access fails
-- `"no audio files found in folder"` - When folder contains no audio files
-- `"failed to read media file"` - When single file cannot be read
-- `"failed to get custom asset for audio"` - When audio asset creation fails
-- `"failed to play audio"` - When audio playback fails
+**Error Messages (Standard Mode):**
+- `"cannot find media, did you forget to add media?"` - When `media` is nil
+- `"cannot find type, did you forget to add type?"` - When `_type` is nil
+- `"cannot find path to media, did you forget to add media?"` - When local media path is missing
+- `"cannot find id of media, did you forget to add media?"` - When Roblox media ID is missing
+- `"cannot find islocal, did you forget to set is local?"` - When `islocal` is nil
+- `"cannot find isroblox, did you forget to set is roblox?"` - When `isroblox` is nil
+- `"cannot load media, [type] is not a type of media."` - When `_type` is not supported
+- `"cannot load audio, [path] is not a valid audio file format. Supported formats: [formats]"` - Invalid audio format
+- `"cannot load video, [path] is not a valid video file format. Supported formats: [formats]"` - Invalid video format
+- `"cannot load image, [path] is not a valid image file format. Supported formats: [formats]"` - Invalid image format
+- `"cannot load document, [path] is not a valid document file format. Supported formats: [formats]"` - Invalid document format
+- `"cannot play sound, [media] is not a valid sound."` - Invalid sound file
+- `"cannot play video, [media] is not a valid video."` - Invalid video file
+- `"cannot play image, [media] is not a valid image."` - Invalid image file
+- `"cannot play document, [media] is not a valid document."` - Invalid document file
 
-**Example - Single Audio File:**
+**Error Messages (Debug Mode):**
+- `"cannot find media, did you forget to add media?. media found: [media] is local? [islocal]"` - Detailed media info
+- `"cannot find type, did you to add type?. type found: [type]"` - Detailed type info
+- `"cannot find path to media, did you forget to add media?. path found: [path]"` - Detailed path info
+- `"cannot find id of media, did you forget to add media?. id found: [id]"` - Detailed ID info
+- `"cannot find islocal, did you set is local?. islocal found: [islocal]"` - Detailed islocal info
+- `"cannot find isroblox, did you forget to set is roblox?. isroblox found: [isroblox]"` - Detailed isroblox info
+
+**Example - Local Audio File:**
 ```lua
-local result, soundInstance = manager.media("song.mp3", "audio", "audio", false)
--- Returns: "media played successfully", soundInstance
--- soundInstance is a Sound object that you can control
+local soundInstance = manager.media("Audio", "sounds/music.mp3", true, false)
+-- Returns: Sound instance
 
 -- Control the sound instance
 if soundInstance then
     soundInstance.Volume = 0.8
-    soundInstance.Pitch = 1.2
-    soundInstance:Pause()
-    soundInstance:Resume()
+    soundInstance:Play()
     soundInstance:Stop()
 end
 ```
 
-**Example - Single Video File (EXPERIMENTAL):**
+**Example - Roblox Audio Asset:**
 ```lua
-local result, videoInstance = manager.media("video.mp4", "video", "video", false)
--- Returns: "video played successfully", videoInstance (EXPERIMENTAL - this is still experimental you may see errors)
--- videoInstance is a VideoFrame object that you can control
+local soundInstance = manager.media("Audio", "rbxassetid://123456789", false, true)
+-- Returns: Sound instance with Roblox asset
+```
+
+**Example - Local Video File:**
+```lua
+local videoInstance = manager.media("Video", "videos/movie.mp4", true, false)
+-- Returns: VideoFrame instance
 
 -- Control the video instance
 if videoInstance then
-    videoInstance.Size = UDim2.new(0, 800, 0, 600) -- Resize video
-    videoInstance.Position = UDim2.new(0, 100, 0, 100) -- Reposition video
-    videoInstance:Pause()
-    videoInstance:Resume()
+    videoInstance.Size = UDim2.new(0, 800, 0, 600)
+    videoInstance:Play()
     videoInstance:Stop()
 end
 ```
 
-**Example - Folder Audio Playback:**
+**Example - Local Image File:**
 ```lua
-local result = manager.media(nil, "audio", "audio", true, "music")
--- Returns: "played 5/5 audio files from folder successfully"
+local imageInstance = manager.media("Image", "images/photo.png", true, false)
+-- Returns: ImageLabel instance
+
+-- Control the image instance
+if imageInstance then
+    imageInstance.Size = UDim2.new(0, 400, 0, 300)
+    imageInstance.Position = UDim2.new(0.5, -200, 0.5, -150)
+end
 ```
 
-**Example - Image File:**
+**Example - Local Document File:**
 ```lua
-local result = manager.media("image.png", "image", "image", false)
--- Returns: Binary content of the image file
+local documentInstance = manager.media("Document", "docs/readme.txt", true, false)
+-- Returns: TextLabel instance with document content
 ```
 
-**Example - Document File:**
+**Example - Debug Mode:**
 ```lua
-local result = manager.media("document.txt", "document", "document", false)
--- Returns: Text content of the document
+local result = manager.media("Audio", "invalid.mp3", true, false, true)
+-- Returns detailed error information if something goes wrong
 ```
+
+**File Format Support:**
+- **Audio**: `.mp3`, `.acc`, `.wav`, `.ogg`, `.m4a`
+- **Video**: `.mp4`, `.mov`, `.avi`, `.wmv`, `.mkv`
+- **Image**: `.jpeg`, `.png`, `.gif`, `.webP`
+- **Document**: `.pdf`, `.doc`, `.txt`, `.rtf`
+
+**Implementation Notes:**
+- ✅ **Enhanced Error Handling**: Comprehensive input validation and file format checking
+- ✅ **File Format Validation**: Automatic validation of file extensions against supported formats
+- ✅ **Debug Mode**: Detailed error messages with parameter information
+- ✅ **Roblox Asset Support**: Full support for `rbxassetid://` URLs
+- ✅ **Instance Creation**: Creates appropriate Roblox instances for each media type
+- ✅ **Workspace Integration**: All instances are created in game.Workspace
+- ✅ **Volume Control**: Audio and video instances have volume control
+- ✅ **Playback Testing**: Automatic playback testing for audio and video files
 
 ---
 

@@ -107,24 +107,31 @@ end
 | `ERR_HTML_MEDIA_ELEMENT_FAILED` | HTMLToGUI: Failed to create media element - [error] | Media element creation failed | Check media file paths and formats |
 | `ERR_HTML_LAYOUT_SETUP_FAILED` | HTMLToGUI: Failed to setup layout - [error] | Layout system failure | Check CSS layout properties |
 
-### Media Operations Error Codes
+### Media Operations Error Codes (v2.0.0 Enhanced)
 
 | Error Code | Description | Common Causes | Solution |
 |------------|-------------|---------------|----------|
-| `ERR_MEDIA_PATH_MISSING` | Cannot handle media, did you forget to add path? | Missing path parameter | Provide file path |
-| `ERR_MEDIA_TYPE_MISSING` | Cannot handle media, did you forget to add type? | Missing type parameter | Provide media type |
-| `ERR_MEDIA_TYPEOF_MISSING` | Cannot handle media, did you forget to add typeofmedia? | Missing typeofmedia parameter | Provide specific media type |
-| `ERR_MEDIA_INVALID_TYPE` | Invalid media type | Unsupported media type | Use "audio", "video", "image", or "document" |
-| `ERR_MEDIA_VIDEO_READ_FAILED` | Failed to read video file | Video file corruption, permission issues (**EXPERIMENTAL**) | Check video file integrity and permissions |
-| `ERR_MEDIA_VIDEO_PLAY_FAILED` | Failed to play video | Video format issues, VideoFrame creation failed (**EXPERIMENTAL**) | Check video file format and Roblox VideoFrame support |
-| `ERR_MEDIA_FOLDER_PATH_MISSING` | Cannot handle media folder, did you forget to add folder path? | Missing folder path for folder mode | Provide folder path |
-| `ERR_MEDIA_FOLDER_NOT_FOUND` | Folder not found: [folder] | Specified folder doesn't exist | Check folder path and existence |
-| `ERR_MEDIA_FOLDER_LIST_FAILED` | Failed to list files in folder | Folder access permission issues | Check folder permissions |
-| `ERR_MEDIA_NO_AUDIO_FILES` | No audio files found in folder | Folder contains no audio files | Add audio files (.mp3, .wav, .ogg, .m4a, .aac) |
-| `ERR_MEDIA_READ_FAILED` | Failed to read media file, keep in mind this is still experimental | File corruption, permission issues | Check file integrity and permissions |
-| `ERR_MEDIA_ASSET_FAILED` | Failed to get custom asset for audio | Audio file format issues | Check audio file format and integrity |
-| `ERR_MEDIA_PLAY_FAILED` | Failed to play audio | Audio system issues | Check Roblox audio system and file format |
-| `ERR_MEDIA_SOUND_CHECK_FAILED` | Failed to check sound: [error] | Sound validation error | Check audio file integrity and format |
+| `ERR_MEDIA_MEDIA_MISSING` | Cannot find media, did you forget to add media? | Missing media parameter | Provide file path or Roblox asset ID |
+| `ERR_MEDIA_MEDIA_MISSING_DEBUG` | Cannot find media, did you forget to add media?. media found: [media] is local? [islocal] | Missing media parameter (debug mode) | Provide file path or Roblox asset ID |
+| `ERR_MEDIA_TYPE_MISSING` | Cannot find type, did you forget to add type? | Missing _type parameter | Provide media type ("Audio", "Video", "Image", "Document") |
+| `ERR_MEDIA_TYPE_MISSING_DEBUG` | Cannot find type, did you to add type?. type found: [type] | Missing _type parameter (debug mode) | Provide media type |
+| `ERR_MEDIA_PATH_MISSING` | Cannot find path to media, did you forget to add media? | Missing local media path | Provide local file path |
+| `ERR_MEDIA_PATH_MISSING_DEBUG` | Cannot find path to media, did you forget to add media?. path found: [path] | Missing local media path (debug mode) | Provide local file path |
+| `ERR_MEDIA_ID_MISSING` | Cannot find id of media, did you forget to add media? | Missing Roblox media ID | Provide Roblox asset ID |
+| `ERR_MEDIA_ID_MISSING_DEBUG` | Cannot find id of media, did you forget to add media?. id found: [id] | Missing Roblox media ID (debug mode) | Provide Roblox asset ID |
+| `ERR_MEDIA_ISLOCAL_MISSING` | Cannot find islocal, did you forget to set is local? | Missing islocal parameter | Provide boolean value for local file |
+| `ERR_MEDIA_ISLOCAL_MISSING_DEBUG` | Cannot find islocal, did you set is local?. islocal found: [islocal] | Missing islocal parameter (debug mode) | Provide boolean value for local file |
+| `ERR_MEDIA_ISROBLOX_MISSING` | Cannot find isroblox, did you forget to set is roblox? | Missing isroblox parameter | Provide boolean value for Roblox asset |
+| `ERR_MEDIA_ISROBLOX_MISSING_DEBUG` | Cannot find isroblox, did you forget to set is roblox?. isroblox found: [isroblox] | Missing isroblox parameter (debug mode) | Provide boolean value for Roblox asset |
+| `ERR_MEDIA_INVALID_TYPE` | Cannot load media, [type] is not a type of media. | Unsupported media type | Use "Audio", "Video", "Image", or "Document" |
+| `ERR_MEDIA_AUDIO_FORMAT_INVALID` | Cannot load audio, [path] is not a valid audio file format. Supported formats: [formats] | Invalid audio file extension | Use .mp3, .acc, .wav, .ogg, or .m4a |
+| `ERR_MEDIA_VIDEO_FORMAT_INVALID` | Cannot load video, [path] is not a valid video file format. Supported formats: [formats] | Invalid video file extension | Use .mp4, .mov, .avi, .wmv, or .mkv |
+| `ERR_MEDIA_IMAGE_FORMAT_INVALID` | Cannot load image, [path] is not a valid image file format. Supported formats: [formats] | Invalid image file extension | Use .jpeg, .png, .gif, or .webP |
+| `ERR_MEDIA_DOCUMENT_FORMAT_INVALID` | Cannot load document, [path] is not a valid document file format. Supported formats: [formats] | Invalid document file extension | Use .pdf, .doc, .txt, or .rtf |
+| `ERR_MEDIA_AUDIO_INVALID` | Cannot play sound, [media] is not a valid sound. | Invalid audio file or Roblox asset | Check audio file integrity and format |
+| `ERR_MEDIA_VIDEO_INVALID` | Cannot play video, [media] is not a valid video. | Invalid video file or Roblox asset | Check video file integrity and format |
+| `ERR_MEDIA_IMAGE_INVALID` | Cannot play image, [media] is not a valid image. | Invalid image file or Roblox asset | Check image file integrity and format |
+| `ERR_MEDIA_DOCUMENT_INVALID` | Cannot play document, [media] is not a valid document. | Invalid document file or Roblox asset | Check document file integrity and format |
 
 ### ScriptFolder Management Error Codes
 

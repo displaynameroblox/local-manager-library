@@ -674,263 +674,308 @@ end
 
 -- okay here should be a part for handling mp3 files and oher media files but im not sure how to do it
 
-function manager.media(path, type, typeofmedia, isfolder, folder)
-    local validmediatypes = {
-        video = true,
-        audio = true,
-        image = true,
-        document = true
+function manager.media(_type, media, islocal, isroblox, debug)
+    local debug = debug or false
+    local typeofmedia = {
+        "Audio",
+        "Video", 
+        "Image",
+        "Document"
     }
-
-    -- error handling
-    if isfolder then
-        -- For folder operations, path is not required but folder is
-        if not folder or folder == "" then
-            return "cannot handle media folder, did you forget to add folder path?"
+    local tpyeofdoc = {
+        ".pdf", -- somehow, pdf files in roblox. i mean roblox is full of them
+        ".doc",
+        ".txt",
+        ".rtf" -- rich txt is roblox? i'm not quite how to do it
+    }
+    local tpyeofimage = {
+        ".jpeg",
+        ".png",
+        ".gif",
+        ".webP" -- who the fuck do use these?
+    }
+    local tpyeofvideo = {
+        ".mp4",
+        ".mov", -- bc i use a mac
+        ".avi",
+        ".wmv",
+        ".mkv"
+    }
+    local tpyeofaudio = {
+        ".mp3",
+        ".acc",
+        ".wav",
+        ".ogg",
+        ".m4a"
+    }
+    
+    -- Helper function to check if file extension is valid for the media type
+    local function isValidFileExtension(filePath, validExtensions)
+        if not filePath or not validExtensions then
+            return false
         end
-    else
-        -- For single file operations, path is required
-        if not path or path == "" then
-            return "cannot handle media, did you forget to add path?"
+        
+        local fileExtension = filePath:match("%.(%w+)$")
+        if not fileExtension then
+            return false
         end
+        
+        fileExtension = "." .. fileExtension:lower()
+        
+        for _, ext in ipairs(validExtensions) do
+            if ext:lower() == fileExtension then
+                return true
+            end
+        end
+        
+        return false
     end
 
-    if not type or type == "" then
-        return "cannot handle media, did you forget to add type?"
-    elseif not typeofmedia or typeofmedia == "" then
-        return "cannot handle media, did you forget to add typeofmedia?"
-    end
-
-    if not validmediatypes[typeofmedia] then
-        return "invalid media type"
-    end
-
-    if typeofmedia == "video" then
-        -- Video handling - experimental but functional
-        if isfolder then
-            -- Video folder handling not supported yet
-            return "video folder playback not supported yet, use single video files"
+    -- Input validation
+    if not islocal and not isroblox and not media then
+        if debug then
+            if islocal then
+                return "cannot find media, did you forget to add media?. media found:" ..
+                    tostring(media) .. " is local?" .. tostring(islocal)
+            elseif isroblox then
+                return "cannot find media, did you forget to add media?. media found:" ..
+                    tostring(media) .. " is roblox id?" .. tostring(isroblox)
+            end
         else
-            -- Handle single video file
-            local readsuccess, mediacontent = pcall(function()
-                return readfile(path)
-            end)
-            if not readsuccess then
-                return "failed to read video file"
-            end
-
-            local videoFrame
-            local assetSuccess, assetOrErr = pcall(function()
-                return getcustomasset(path)
-            end)
-            if not assetSuccess then
-                return "failed to get custom asset for video"
-            end
-
-            local instanceSuccess, instanceErr = pcall(function()
-                videoFrame = Instance.new("VideoFrame")
-                videoFrame.Name = "Video_" .. path:match("([^/\\]+)$") -- Use filename as video name
-                videoFrame.Video = assetOrErr
-                videoFrame.Size = UDim2.new(0, 400, 0, 300)            -- Default size
-                videoFrame.Position = UDim2.new(0.5, -200, 0.5, -150)  -- Center on screen
-
-                -- Put video in scriptfolder instead of workspace
-                local scriptFolder = getScriptFolder()
-                if scriptFolder then
-                    local mediaFolder = scriptFolder:FindFirstChild("Media")
-                    if not mediaFolder then
-                        mediaFolder = Instance.new("Folder")
-                        mediaFolder.Name = "Media"
-                        mediaFolder.Parent = scriptFolder
-                    end
-
-                    -- Create a ScreenGui for the video if it doesn't exist
-                    local videoGui = scriptFolder:FindFirstChild("VideoGui")
-                    if not videoGui then
-                        videoGui = Instance.new("ScreenGui")
-                        videoGui.Name = "VideoGui"
-                        videoGui.Parent = scriptFolder
-                    end
-
-                    videoFrame.Parent = videoGui
-                else
-                    -- Fallback: create ScreenGui in workspace
-                    local videoGui = Instance.new("ScreenGui")
-                    videoGui.Name = "VideoGui"
-                    videoGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
-                    videoFrame.Parent = videoGui
-                end
-
-                -- Start playing the video
-                videoFrame:Play()
-
-                -- Optional: Clean up video after it finishes (if video has Ended event)
-                if videoFrame.Ended then
-                    videoFrame.Ended:Connect(function()
-                        videoFrame:Destroy()
-                    end)
-                end
-            end)
-            if not instanceSuccess then
-                return "failed to play video"
-            end
-
-            return "video played successfully", videoFrame -- Return success message and video instance
+            return "cannot find media, did you forget to add media?"
         end
     end
 
-    if typeofmedia == "audio" then
-        if isfolder then
-            -- Handle folder of audio files
+    if not _type then
+        if debug then
+            return "cannot find type, did you to add type?. type found: " .. tostring(_type)
+        else
+            return "cannot find type, did you forget to add type?"
+        end
+    end
 
-            local folderExists = pcall(function()
-                return isfolder(folder)
-            end)
-
-            if not folderExists then
-                return "folder not found: " .. folder
+    if not media then
+        if debug then
+            if islocal then
+                return "cannot find path to media, did you forget to add media?. path found: " .. tostring(media)
+            elseif isroblox then
+                return "cannot find id of media, did you forget to add media?. id found: " .. tostring(media)
             end
-
-            local listSuccess, files = pcall(function()
-                return listfiles(folder)
-            end)
-
-            if not listSuccess then
-                return "failed to list files in folder"
+        else
+            if islocal then
+                return "cannot find path to media, did you forget to add media?"
+            elseif isroblox then
+                return "cannot find id of media, did you forget to add media?"
             end
+        end
+    end
 
-            -- Filter for audio files (common audio extensions)
-            local audioExtensions = { ".mp3", ".wav", ".ogg", ".m4a", ".aac" }
-            local audioFiles = {}
+    if not islocal and isroblox == nil then
+        if debug then
+            return "cannot find islocal, did you set is local?. islocal found: " .. tostring(islocal)
+        else
+            return "cannot find islocal, did you forget to set is local?"
+        end
+    elseif not isroblox and islocal == nil then
+        if debug then
+            return "cannot find isroblox, did you forget to set is roblox?. isroblox found: " .. tostring(isroblox)
+        else
+            return "cannot find isroblox, did you forget to set is roblox?"
+        end
+    end
 
-            for _, file in ipairs(files) do
-                local fileName = file:match("([^/\\]+)$") -- Get filename from path
-                local extension = fileName:match("%.(%w+)$")
-                if extension then
-                    extension = "." .. extension:lower()
-                    for _, audioExt in ipairs(audioExtensions) do
-                        if extension == audioExt then
-                            table.insert(audioFiles, file)
-                            break
-                        end
-                    end
-                end
+    -- Validate media type
+    local isValidType = false
+    for _, validType in ipairs(typeofmedia) do
+        if _type == validType then
+            isValidType = true
+            break
+        end
+    end
+
+    if not isValidType then
+        return "cannot load media, " .. tostring(_type) .. " is not a type of media."
+    end
+
+    -- Handle different media types
+    if _type == "Audio" then
+        if islocal then
+            -- Check if file extension is valid for audio
+            if not isValidFileExtension(media, tpyeofaudio) then
+                return "cannot load audio, " .. tostring(media) .. " is not a valid audio file format. Supported formats: " .. table.concat(tpyeofaudio, ", ")
             end
-
-            if #audioFiles == 0 then
-                return "no audio files found in folder"
-            end
-
-            -- Play all audio files in the folder
-            local sounds = {}
-            local successCount = 0
-
-            for i, audioFile in ipairs(audioFiles) do
-                local fileName = audioFile:match("([^/\\]+)$")
-                print("Playing audio file " .. i .. "/" .. #audioFiles .. ": " .. fileName)
-
-                local assetSuccess, assetOrErr = pcall(function()
-                    return getcustomasset(audioFile)
-                end)
-
-                if assetSuccess then
-                    local instanceSuccess = pcall(function()
-                        local sound = Instance.new("Sound")
-                        sound.Name = "Audio_" .. i .. "_" .. fileName
-                        sound.SoundId = assetOrErr
-
-                        -- Put sound in scriptfolder instead of workspace
-                        local scriptFolder = getScriptFolder()
-                        if scriptFolder then
-                            local audioFolder = scriptFolder:FindFirstChild("Audio")
-                            if not audioFolder then
-                                audioFolder = Instance.new("Folder")
-                                audioFolder.Name = "Audio"
-                                audioFolder.Parent = scriptFolder
-                            end
-                            sound.Parent = audioFolder
-                        else
-                            sound.Parent = game.Workspace -- Fallback to workspace
-                        end
-
-                        sound.Volume = 0.5 -- Set reasonable volume
+            
+            local soundid = getcustomasset(media)
+            local sound = Instance.new("Sound")
+            local soundname = media:split("/")
+            sound.SoundId = soundid
+            sound.Name = soundname[#soundname]
+            sound.Parent = game.Workspace
+            
+            -- Check the sound
+            if sound then
+                if sound.IsLoaded then
+                    local played = pcall(function()
+                        sound.Volume = 1
                         sound:Play()
-
-                        -- Clean up sound after it finishes playing
-                        sound.Ended:Connect(function()
-                            sound:Destroy()
-                        end)
-
-                        table.insert(sounds, sound)
                     end)
-
-                    if instanceSuccess then
-                        successCount = successCount + 1
+                    if not played then
+                        sound:Stop()
+                        return "cannot play sound, " .. tostring(media) .. " is not a valid sound."
+                    else
+                        sound:Stop()
+                        return sound
                     end
                 end
             end
-
-            return "played " .. successCount .. "/" .. #audioFiles .. " audio files from folder successfully"
-        else
-            -- Handle single audio file
-            local readsuccess, mediacontent = pcall(function()
-                return readfile(path)
-            end)
-            if not readsuccess then
-                return "failed to read media file"
+            return sound
+        elseif isroblox then
+            local soundid = nil
+            if media:match("^rbxassetid://") then
+                soundid = media
+            else
+                return "cannot play sound, " .. tostring(media) .. " is not a valid sound."
             end
-
-            local sound
-            local assetSuccess, assetOrErr = pcall(function()
-                return getcustomasset(path)
-            end)
-            if not assetSuccess then
-                return "failed to get custom asset for audio"
-            end
-
-            local instanceSuccess, instanceErr = pcall(function()
-                sound = Instance.new("Sound")
-                sound.Name = "Audio_" .. path:match("([^/\\]+)$") -- Use filename as sound name
-                sound.SoundId = assetOrErr
-
-                -- Put sound in scriptfolder instead of workspace
-                local scriptFolder = getScriptFolder()
-                if scriptFolder then
-                    local audioFolder = scriptFolder:FindFirstChild("Audio")
-                    if not audioFolder then
-                        audioFolder = Instance.new("Folder")
-                        audioFolder.Name = "Audio"
-                        audioFolder.Parent = scriptFolder
+            local sound = Instance.new("Sound")
+            sound.SoundId = soundid
+            sound.Name = soundid:split("/")
+            sound.Volume = 1
+            sound.Parent = game.Workspace
+            if sound then
+                if sound.IsLoaded then
+                    local played = pcall(function()
+                        sound.Volume = 0
+                        sound:Play()
+                    end)
+                    if not played then
+                        sound:Stop()
+                        return "cannot play sound, " .. tostring(media) .. " is not a valid sound."
+                    else
+                        sound:Stop()
+                        return sound
                     end
-                    sound.Parent = audioFolder
-                else
-                    sound.Parent = game.Workspace -- Fallback to workspace
                 end
-
-                sound.Volume = 0.5 -- Set reasonable volume
-                sound:Play()
-
-                -- Clean up sound after it finishes playing
-                sound.Ended:Connect(function()
-                    sound:Destroy()
-                end)
-            end)
-            if not instanceSuccess then
-                return "failed to play audio"
             end
-
-            return "media played successfully", sound -- Return success message and sound instance
+            return sound
         end
-    end
-
-    -- For other media types, just return the file content for now
-    local readsuccess, mediacontent = pcall(function()
-        return readfile(path)
-    end)
-    if readsuccess then
-        return mediacontent
-    else
-        return "failed to read media file"
+    elseif _type == "Video" then
+        if islocal then
+            -- Check if file extension is valid for video
+            if not isValidFileExtension(media, tpyeofvideo) then
+                return "cannot load video, " .. tostring(media) .. " is not a valid video file format. Supported formats: " .. table.concat(tpyeofvideo, ", ")
+            end
+            
+            local videoid = getcustomasset(media)
+            local video = Instance.new("VideoFrame")
+            video.Video = videoid
+            video.Name = videoid:split("/")
+            video.Parent = game.Workspace
+            video.Volume = 1
+            if video then
+                if video.IsLoaded then
+                    local played = pcall(function()
+                        video.Volume = 0
+                        video:Play()
+                    end)
+                    if not played then
+                        video:Stop()
+                        return "cannot play video, " .. tostring(media) .. " is not a valid video."
+                    else
+                        video:Stop()
+                        return video
+                    end
+                end
+            end
+            return video
+        elseif isroblox then
+            -- roblox videos here, keep in mind roblox don't support videos really well
+            local videoid = nil
+            if media:match("^rbxassetid://") then
+                videoid = media
+            else
+                return "cannot play video, " .. tostring(media) .. " is not a valid video."
+            end
+            local video = Instance.new("VideoFrame")
+            video.Video = videoid
+            video.Name = videoid:split("/")
+            video.Parent = game.Workspace
+            video.Volume = 1
+            if video then
+                if video.IsLoaded then
+                    local played = pcall(function()
+                        video.Volume = 0
+                        video:Play()
+                    end)
+                    if not played then
+                        video:Stop()
+                        return "cannot play video, " .. tostring(media) .. " is not a valid video."
+                    else
+                        video:Stop()
+                        return video
+                    end
+                end
+            end
+            return video
+        end
+    elseif _type == "Image" then
+        if islocal then
+            -- Check if file extension is valid for image
+            if not isValidFileExtension(media, tpyeofimage) then
+                return "cannot load image, " .. tostring(media) .. " is not a valid image file format. Supported formats: " .. table.concat(tpyeofimage, ", ")
+            end
+            
+            local imageid = getcustomasset(media)
+            local image = Instance.new("ImageLabel")
+            image.Image = imageid
+            image.Name = imageid:split("/")
+            image.Parent = game.Workspace
+            return image
+            -- we cannot check if the image is valid just yet, that for later
+        elseif isroblox then
+            local imageid = nil
+            if media:match("^rbxassetid://") then
+                imageid = media
+            else
+                return "cannot play image, " .. tostring(media) .. " is not a valid image."
+            end
+            local image = Instance.new("ImageLabel")
+            image.Image = imageid
+            image.Name = imageid:split("/")
+            image.Parent = game.Workspace
+            return image
+        end
+    elseif _type == "Document" then
+        if islocal then
+            -- Check if file extension is valid for document
+            if not isValidFileExtension(media, tpyeofdoc) then
+                return "cannot load document, " .. tostring(media) .. " is not a valid document file format. Supported formats: " .. table.concat(tpyeofdoc, ", ")
+            end
+            
+            local imageid = getcustomasset(media)
+            local image = Instance.new("TextLabel")
+            image.Text = imageid
+            image.Name = imageid:split("/")
+            image.Parent = game.Workspace
+            return image
+        elseif isroblox then
+            local imageid = nil
+            if media:match("^rbxassetid://") then
+                imageid = media
+            else
+                return "cannot play document, " .. tostring(media) .. " is not a valid document."
+            end
+            local image = Instance.new("TextLabel")
+            image.Image = imageid
+            image.Name = imageid:split("/")
+            image.Parent = game.Workspace
+            image.TextColor3 = Color3.new(1, 1, 1)
+            image.TextScaled = true
+            image.TextSize = 16
+            image.TextStrokeTransparency = 0
+            image.TextStrokeColor3 = Color3.new(0, 0, 0)
+            image.TextStrokeTransparency = 0
+            return image
+        end
     end
 end
 
@@ -1678,3 +1723,4 @@ function manager.javatolua(scripted, doexecute)
 end
 
 return manager
+
