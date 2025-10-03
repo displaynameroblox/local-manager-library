@@ -80,10 +80,25 @@ function newmedia(_type, media, islocal, isroblox)
             return "cannot find isroblox, did you forget to set is roblox?. isroblox found: " .. tostring(isroblox)
         end
     end
-    -- handling the files themself
-    -- for later me, i can't do it right now
-    if media and islocal and isroblox and type then
-        return "WIP"
+    if media and _type then
+        if _type == typeofmedia then
+            if _type == "Audio" then -- audio, yay
+                if islocal then
+                    -- local files here
+                elseif isroblox then
+                    -- roblox audio here
+                end
+                if _type == "Video" then
+                    if islocal then
+                        -- local files here
+                    elseif isroblox then
+                        -- roblox videos here, keep in mind roblox don't support videos really well
+                    end
+                end
+            end
+        else
+            return "cannot load media, " .. tostring(_type) .. " is not a type of media."
+        end
     end
 end
 
