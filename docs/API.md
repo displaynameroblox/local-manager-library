@@ -1,5 +1,5 @@
 # 📚 Local Manager Library - API Documentation
-
+*keep in mind, any new stuff might not be here or not well documented*
 Complete API reference for the Local Manager Library.
 
 ## Table of Contents
@@ -187,124 +187,127 @@ local result = manager.dfile("config.json", true, "config.json.undo")
 -- Returns: "file restored successfully from undo backup"
 ```
 
-### `manager.saveas(path, content, type)` ⚠️ DEPRECATED
+### `manager.saveas(instance, path, debug, content)` ✅ PRODUCTION
 
-**[DEPRECATED FUNCTION]** This function has been deprecated and now returns an error message directing users to use the new implementation.
+**[PRODUCTION FUNCTION]** The enhanced implementation of saveas functionality with comprehensive error handling, debug mode, and support for multiple instance types.
 
-**⚠️ Warning:** This function is no longer functional and will always return an error message.
-
-**Current Behavior:** Always returns `"try using the new saveas: manager.newsaveas"`
+**⚠️ Note:** This function has been completely rewritten from the deprecated version with new parameters and capabilities.
 
 **Signature:**
 ```lua
-function manager.saveas(path: string, content: string|table|userdata, type: string): string
+function manager.saveas(instance: string, path: string, debug: boolean?, content: string?): string
 ```
 
 **Parameters:**
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
+| `instance` | `string` | ✅ | Type of instance to create ("Sound", "model", "image", "video", "script") |
 | `path` | `string` | ✅ | File path where to save the instance |
-| `content` | `string\|table\|userdata` | ✅ | Content to save (varies by type) |
-| `type` | `string` | ✅ | Type of instance to create ("Sound", "Model", "Script", "Image") |
+| `debug` | `boolean` | ❌ | Enable debug mode for detailed error messages and error codes |
+| `content` | `string` | ❌ | Content for script saving (required when instance is "script") |
 
 **Returns:**
 | Type | Description |
 |------|-------------|
-| `string` | Always returns `"try using the new saveas: manager.newsaveas"` |
-
-**Error Messages:**
-- `"try using the new saveas: manager.newsaveas"` - Always returned (deprecated function)
-
-**Example - Deprecated Function:**
-```lua
--- This function is deprecated and always returns an error message
-local result = manager.saveas("sounds/music.mp3", audioData, "Sound")
--- Returns: "try using the new saveas: manager.newsaveas"
-
--- Note: Use manager.newsaveas instead (when implemented)
-```
-
-### `manager.newsaveas(instance, path, moredebug)` ⚠️ EXPERIMENTAL
-
-**[EXPERIMENTAL FEATURE]** The new implementation of saveas functionality. This function is designed to replace the deprecated `manager.saveas` function with improved error handling and debugging capabilities.
-
-**⚠️ Warning:** This function is currently under development and may not be fully implemented in the main library yet.
-
-**Signature:**
-```lua
-function manager.newsaveas(instance: string, path: string, moredebug: boolean?): string
-```
-
-**Parameters:**
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `instance` | `string` | ✅ | Type of instance to create ("Sound", "video", "model", "script") |
-| `path` | `string` | ✅ | File path where to save the instance |
-| `moredebug` | `boolean` | ❌ | Enable debug mode for detailed error messages |
-
-**Returns:**
-| Type | Description |
-|------|-------------|
-| `string` | Success message or error description |
+| `string` | Success message or error description with error codes (when debug enabled) |
 
 **Supported Instance Types:**
-- `"Sound"` - Creates a Sound instance (IMPLEMENTED - experimental)
-- `"video"` - Video handling (COMING SOON)
-- `"model"` - Model handling (COMING SOON)
-- `"script"` - Script handling (COMING SOON)
+- ✅ `"Sound"` - Creates a Sound instance (FULLY IMPLEMENTED)
+- ✅ `"model"` - Saves Model instances as .rbxl/.rbxlx files (FULLY IMPLEMENTED)
+- ✅ `"image"` - Saves ImageLabel/ImageButton/Decal/Texture instances (FULLY IMPLEMENTED)
+- 🚧 `"video"` - Video saving (WORK IN PROGRESS)
+- ✅ `"script"` - Saves Lua script content (FULLY IMPLEMENTED)
 
 **Success Messages:**
-- `"file saved successfully at path: [path]"` - File saved successfully
+- `"file saved successfully at path: [path]"` - Sound/Model/Image saved successfully
+- `"successfully saved script file"` - Script saved successfully
+- `"successfully saved script file in path: [path] with content length: [length]"` - Script saved (debug mode)
 
-**Error Messages:**
-- `"cannot saveas, did you forget to add instance?."` - When `instance` is nil or empty
-- `"cannot saveas, did you forget to add instance?. instance found: [instance] path found: [path]"` - Debug mode version
-- `"cannot saveas, file already exists at path"` - When target file already exists
-- `"cannot saveas, file already exists at path: [path]data found[data]"` - Debug mode version
-- `"file already exists, cannot overwire file"` - When trying to overwrite existing file
-- `"cannot saveas, more coming soon![path],[debug]"` - When using unsupported instance types
-- `"failed to save file at path"` - When file saving fails
-- `"failed to save file at path: [path]error: [error]"` - Debug mode version
+**Error Messages (Standard Mode):**
+- `"cannot saveas, did you forget to add instance?."` - Missing instance parameter
+- `"cannot saveas, missing required parameters"` - Missing required parameters
+- `"cannot saveas, file already exists at path"` - Target file already exists
+- `"failed to save model: invalid model instance"` - Invalid model for saving
+- `"failed to save model: invalid file format"` - Wrong file format for model
+- `"failed to save image: invalid image instance"` - Invalid image instance
+- `"failed to save image: invalid file format"` - Wrong file format for image
+- `"script saving requires content parameter"` - Missing content for script
+- `"🚧 VIDEO SAVING - WORK IN PROGRESS! Coming soon!"` - Video saving not implemented
+- `"unsupported instance type - Supported: Sound, script, model, image, video"` - Invalid instance type
 
-**Example - Basic Usage:**
+**Error Messages (Debug Mode):**
+- `"cannot saveas, missing parameters. instance: [instance] path: [path]"` - Detailed parameter info
+- `"cannot saveas, file already exists at path: [path] data found: [data]"` - Detailed file conflict info
+- `"failed to save model: tobesaved is not a Model instance. Type: [type]"` - Detailed model validation
+- `"failed to save model: invalid path format. Expected .rbxl or .rbxlx, got: [path]"` - Detailed format validation
+- `"failed to save image: tobesaved is not a valid image instance. Type: [type]"` - Detailed image validation
+- `"failed to save image: invalid file format. Expected: [formats], got: [path]"` - Detailed format validation
+- `"script saving requires content parameter - use manager.saveas('script', path, debug, content)"` - Detailed script guidance
+
+**Example - Sound Saving:**
 ```lua
--- Save a Sound instance
-local result = manager.newsaveas("Sound", "sounds/music.mp3")
+local result = manager.saveas("Sound", "sounds/music.mp3")
 -- Returns: "file saved successfully at path: sounds/music.mp3"
 ```
 
-**Example - With Debug Mode:**
+**Example - Model Saving:**
 ```lua
--- Save with debug information
-local result = manager.newsaveas("Sound", "sounds/music.mp3", true)
--- Returns detailed error messages if something goes wrong
+local myModel = workspace:FindFirstChild("MyModel")
+if myModel and myModel:IsA("Model") then
+    local result = manager.saveas("model", "models/my_model.rbxl", false, myModel)
+    -- Returns: "file saved successfully at path: models/my_model.rbxl"
+end
 ```
 
-**Example - Error Handling:**
+**Example - Image Saving:**
 ```lua
--- Try with missing instance type
-local result = manager.newsaveas(nil, "test.mp3")
--- Returns: "cannot saveas, did you forget to add instance?."
+local myImage = workspace:FindFirstChild("MyImage")
+if myImage and myImage:IsA("ImageLabel") then
+    local result = manager.saveas("image", "images/my_image.png", false, myImage)
+    -- Returns: "file saved successfully at path: images/my_image.png"
+end
+```
 
--- Try with unsupported type
-local result = manager.newsaveas("video", "test.mp4")
--- Returns: "cannot saveas, more coming soon!test.mp4,false"
+**Example - Script Saving:**
+```lua
+local scriptContent = [[
+print("Hello World")
+local x = 10
+print("Value:", x)
+]]
+
+local result = manager.saveas("script", "scripts/my_script.lua", false, scriptContent)
+-- Returns: "successfully saved script file"
+```
+
+**Example - Debug Mode:**
+```lua
+-- Enable debug mode for detailed error information
+local result = manager.saveas("model", "models/test.rbxl", true, myModel)
+-- Returns detailed error codes and troubleshooting information if something goes wrong
 ```
 
 **Implementation Notes:**
-- ⚠️ EXPERIMENTAL IMPLEMENTATION
-- Currently only supports Sound instances
-- Uses `writecustomasset` for Sound creation (Wave executor specific)
-- Debug mode provides detailed error information
-- Other instance types are planned but not yet implemented
-- Function may not be available in main library yet (check separate saveas.lua file)
+- ✅ PRODUCTION READY - All major instance types implemented
+- Comprehensive error handling with automatic cleanup
+- Debug mode provides error codes referencing TROUBLESHOOTING.md
+- Model saving includes workspace cleanup and proper cloning
+- Image saving supports multiple Roblox image instance types
+- Script saving with automatic .lua extension handling
+- Video saving marked as work in progress
 
-**Known Limitations:**
-1. Only Sound instances are currently implemented
-2. May not be exposed through manager object yet
-3. Debug mode may not work on all executors
-4. Custom asset creation is executor-dependent
-5. Other instance types are not yet supported
+**File Format Support:**
+- **Models**: `.rbxl`, `.rbxlx`
+- **Images**: `.png`, `.jpg`, `.jpeg`, `.gif`, `.bmp`, `.tiff`, `.ico`
+- **Scripts**: `.lua` (auto-added if missing)
+- **Sounds**: `.mp3`, `.wav`, `.ogg`, `.m4a`, `.aac`
+
+**Debug Mode Features:**
+- Error codes from TROUBLESHOOTING.md
+- Detailed parameter validation information
+- File content and format validation details
+- Instance type and property validation
+- Comprehensive error context for troubleshooting
 
 ### `manager.checkSaveasCapabilities()`
 
@@ -429,9 +432,11 @@ local result = manager.download("https://api.example.com/upload", "response.json
 
 ## HTML to GUI Conversion
 
-### `manager.html(url, islocal, path, convertToGui, parentGui)`
+### `manager.html(url, islocal, path, convertToGui, parentGui)` ✅ ENHANCED
 
-Loads HTML content and optionally converts it to Roblox GUI elements.
+Loads HTML content and optionally converts it to Roblox GUI elements using the enhanced HTML5 and CSS3 parser.
+
+**⚠️ Enhanced:** Now uses comprehensive HTML5 and CSS3 support with advanced error handling and media element support.
 
 **Signature:**
 ```lua
@@ -451,11 +456,19 @@ function manager.html(url: string?, islocal: boolean, path: string, convertToGui
 | Type | Description |
 |------|-------------|
 | `string` | HTML content (when `convertToGui` is false) |
-| `string` | Success message (when `convertToGui` is true) |
-| `string` | Error description |
+| `Instance` | Roblox GUI instance (when `convertToGui` is true) |
+| `string` | Error description with error codes (when debug mode enabled) |
+
+**Enhanced Features:**
+- ✅ **HTML5 Support**: Semantic elements (`section`, `article`, `aside`, `header`, `footer`, `main`, `nav`, `figure`, `figcaption`)
+- ✅ **Media Elements**: `<video>` creates VideoFrame, `<audio>` creates Sound instances
+- ✅ **Advanced CSS3**: Layout properties, transparency, borders, flexbox-like layouts
+- ✅ **Form Enhancements**: HTML5 input types (`email`, `url`, `tel`, `search`, `number`, `range`, `color`, `date`, `time`)
+- ✅ **Error Handling**: Comprehensive validation with error codes from TROUBLESHOOTING.md
+- ✅ **Layout System**: UIListLayout integration for responsive designs
 
 **Success Messages:**
-- `"HTML converted to GUI successfully"` - When HTML is successfully converted to GUI
+- Returns Roblox GUI instance - When HTML is successfully converted to GUI
 - Returns HTML content as string - When HTML is loaded without GUI conversion
 
 **Error Messages:**
@@ -467,18 +480,54 @@ function manager.html(url: string?, islocal: boolean, path: string, convertToGui
 - `"cannot find url, or it's offline"` - When URL request fails or URL is offline
 - `"received empty response from server"` - When server returns empty content
 - `"no HTML content available"` - When no content is available
+- `"HTMLToGUI: Conversion failed - [error]"` - When HTML parsing or GUI creation fails
 
-**Example:**
+**Example - Basic HTML5:**
 ```lua
--- Load HTML from URL and convert to GUI
+-- Load HTML with HTML5 semantic elements
 local result = manager.html("https://example.com/page.html", false, "downloaded.html", true)
-
--- Load local HTML file and convert to GUI
-local result = manager.html(nil, true, "local.html", true)
-
--- Just load HTML content without conversion
-local htmlContent = manager.html("https://example.com/page.html", false, "downloaded.html")
+-- Returns: Roblox GUI instance with semantic elements converted
 ```
+
+**Example - HTML5 with CSS3:**
+```lua
+-- Load local HTML with advanced CSS
+local result = manager.html(nil, true, "advanced.html", true)
+-- Returns: Roblox GUI with CSS3 properties applied
+```
+
+**Example - Media Elements:**
+```lua
+-- HTML with video and audio elements
+local htmlWithMedia = [[
+<video src="video.mp4" controls></video>
+<audio src="audio.mp3" controls></audio>
+]]
+local result = manager.html(nil, true, "media.html", true)
+-- Creates VideoFrame for video and Sound instance for audio
+```
+
+**Example - Debug Mode:**
+```lua
+-- Enable debug mode for detailed error information
+manager._DEBUG_MODE = true
+local result = manager.html("https://example.com/page.html", false, "downloaded.html", true)
+-- Returns detailed error codes and troubleshooting information if something goes wrong
+```
+
+**Supported HTML5 Elements:**
+- **Semantic**: `section`, `article`, `aside`, `header`, `footer`, `main`, `nav`, `figure`, `figcaption`, `time`, `progress`, `meter`, `details`, `summary`, `wbr`
+- **Media**: `video`, `audio`, `source`, `track`, `canvas`, `embed`, `object`
+- **Forms**: `email`, `url`, `tel`, `search`, `number`, `range`, `color`, `date`, `time`, `datetime-local`, `month`, `week`, `file`, `datalist`, `output`, `fieldset`, `legend`
+- **Advanced**: `progress`, `meter`, `details`, `summary`, `wbr`
+
+**Supported CSS3 Properties:**
+- **Layout**: `min-height`, `max-height`, `font-style`, `vertical-align`, `flex-direction`, `justify-content`, `align-items`
+- **Colors**: Full hex, rgb, rgba support with Color3 conversion
+- **Typography**: Enhanced font handling, text alignment, decorations
+- **Spacing**: Margin, padding, border-radius with UDim2 conversion
+- **Transparency**: Background and text transparency support
+- **Borders**: Border size, color, and corner radius with UICorner
 
 ---
 
@@ -724,9 +773,9 @@ local result = manager.createScriptFolderStructure()
 
 ### `manager.javatolua(scripted, doexecute)` ⚠️ EXPERIMENTAL
 
-**[EXPERIMENTAL FEATURE]** Converts Java code to Lua format and optionally executes it. This is a placeholder implementation that provides basic Java-like syntax recognition.
+**[EXPERIMENTAL FEATURE]** Converts Java code to Lua format and optionally executes it. This is a placeholder implementation that provides basic Java-like syntax recognition with enhanced error handling.
 
-**⚠️ Warning:** This is an experimental function with limited Java parsing capabilities. It's primarily a proof-of-concept and may not handle complex Java code correctly.
+**⚠️ Warning:** This is an experimental function with limited Java parsing capabilities. It's primarily a proof-of-concept and may not handle complex Java code correctly. Enhanced with debug mode support.
 
 **Signature:**
 ```lua
@@ -749,12 +798,19 @@ function manager.javatolua(scripted: string, doexecute: boolean): (string, strin
 - `"java to lua conversion completed successfully"` - Conversion completed without execution
 - `"java to lua conversion completed successfully"` - Conversion and execution completed
 
-**Error Messages:**
-- `"cannot find script, did you forget to add script?: [scripted]"` - When `scripted` is nil
-- `"cannot convert java to lua, did you forget to add doexecute parameter?: [doexecute]"` - When `doexecute` is nil
+**Error Messages (Standard Mode):**
+- `"cannot find script, did you forget to add script?"` - When `scripted` is nil
+- `"cannot convert java to lua, did you forget to add doexecute parameter?"` - When `doexecute` is nil
 - `"invalid script content, please provide a valid string"` - When script content is invalid
 - `"failed to process script: [error]"` - When script processing fails
 - `"failed to execute converted script: [error]"` - When script execution fails
+
+**Error Messages (Debug Mode):**
+- `"cannot find script, did you forget to add script?: [scripted]"` - When `scripted` is nil (debug mode)
+- `"cannot convert java to lua, did you forget to add doexecute parameter?: [doexecute]"` - When `doexecute` is nil (debug mode)
+- `"invalid script content, please provide a valid string - content type: [type], length: [length]"` - When script content is invalid (debug mode)
+- `"failed to process script: [error] - script length: [length]"` - When script processing fails (debug mode)
+- `"failed to execute converted script: [error] - converted code: [code]"` - When script execution fails (debug mode)
 
 **Example - Convert Without Execution:**
 ```lua
@@ -776,6 +832,14 @@ print("Converted code:", luaCode)
 local javaCode = "print('Hello from Java-like code')"
 local result = manager.javatolua(javaCode, true)
 -- Returns: "java to lua conversion completed successfully"
+```
+
+**Example - Debug Mode:**
+```lua
+-- Enable debug mode for detailed error information
+manager._DEBUG_MODE = true
+local result, luaCode = manager.javatolua(javaCode, false)
+-- Returns detailed error codes and troubleshooting information if something goes wrong
 ```
 
 **Implementation Notes:**

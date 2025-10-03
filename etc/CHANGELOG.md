@@ -5,6 +5,191 @@ All notable changes to the Local Manager Library will be documented in this file
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] - 2 Oct 2025 *major html parser overhaul and function restructuring*
+
+### 🚀 Major Breaking Changes
+
+#### **HTML Parser Complete Overhaul**
+- **REMOVED**: Old `_htmlToGuiInternal` function (lines 1009-1283)
+- **INTEGRATED**: Enhanced HTML parser from `newhtmltogui.lua` into main library
+- **NEW**: `newhtml.fromHTML(html, css)` - Comprehensive HTML5 and CSS3 support
+- **ENHANCED**: Support for HTML5 semantic elements, media elements, and advanced CSS properties
+- **IMPROVED**: Better error handling, validation, and layout system with UIListLayout
+
+#### **Function Renaming and Restructuring**
+- **RENAMED**: `manager.newsaveas()` → `manager.saveas()`
+- **REMOVED**: Old `saveas()` function (deprecated implementation)
+- **INTEGRATED**: All saveas functionality into single, comprehensive function
+- **ENHANCED**: Debug mode with error codes from TROUBLESHOOTING.md
+
+#### **Debug Mode Implementation**
+- **NEW**: Global debug mode system with `_DEBUG_MODE` variable
+- **ENHANCED**: All functions now return detailed error codes when debug is enabled
+- **INTEGRATED**: Error code mapping system referencing TROUBLESHOOTING.md
+- **IMPROVED**: Comprehensive error reporting with context and troubleshooting information
+
+### 🎯 New Features
+
+#### **Enhanced HTML5 Support**
+- **Semantic Elements**: `section`, `article`, `aside`, `header`, `footer`, `main`, `nav`, `figure`, `figcaption`
+- **Media Elements**: `video`, `audio`, `source`, `track`, `canvas`, `embed`, `object`
+- **Form Enhancements**: `email`, `url`, `tel`, `search`, `number`, `range`, `color`, `date`, `time`, `datetime-local`
+- **Advanced Elements**: `progress`, `meter`, `details`, `summary`, `wbr`, `datalist`, `output`, `fieldset`, `legend`
+
+#### **Comprehensive CSS3 Support**
+- **Layout Properties**: `min-height`, `max-height`, `font-style`, `vertical-align`, `flex-direction`, `justify-content`, `align-items`
+- **Advanced Colors**: Full hex, rgb, rgba support with Color3 conversion
+- **Typography**: Enhanced font handling, text alignment, decorations
+- **Spacing**: Margin, padding, border-radius with UDim2 conversion
+- **Transparency**: Background and text transparency support
+- **Borders**: Border size, color, and corner radius with UICorner
+
+#### **Media and Non-UI Element Support**
+- **Video Elements**: `<video>` tags create VideoFrame instances
+- **Audio Elements**: `<audio>` tags create Sound instances for non-UI audio
+- **Image Enhancement**: Better ImageLabel handling with scale types
+- **Layout System**: UIListLayout integration for flexbox-like layouts
+
+#### **Advanced Error Handling**
+- **Safe Execution**: `pcall` wrapper for all critical operations
+- **Detailed Validation**: Input sanitization and HTML structure validation
+- **Graceful Degradation**: Fallback options for unsupported features
+- **Comprehensive Logging**: Detailed error messages with context
+
+### 🔧 Function Updates
+
+#### **manager.html() Complete Rewrite**
+- **NEW**: Uses enhanced HTML parser with CSS support
+- **ENHANCED**: Better attribute parsing (single/double quotes, boolean attributes)
+- **IMPROVED**: Inline style parsing and CSS class/id selector support
+- **ADDED**: Self-closing tag support and nested structure handling
+- **INTEGRATED**: Layout system with UIListLayout and UIGridLayout
+
+#### **manager.saveas() Enhanced**
+- **RENAMED**: From `manager.newsaveas()` for consistency
+- **ENHANCED**: Debug mode with error codes and detailed information
+- **IMPROVED**: Better parameter validation and error reporting
+- **INTEGRATED**: All saveas functionality in single function
+- **ADDED**: Comprehensive error handling for all instance types
+
+#### **Debug Mode System**
+- **GLOBAL**: `_DEBUG_MODE` variable controls debug output across all functions
+- **ERROR CODES**: Referenced from TROUBLESHOOTING.md for consistent error handling
+- **DETAILED INFO**: Enhanced error messages with context and troubleshooting steps
+- **VALIDATION**: Input parameter validation with debug information
+
+### 📚 Documentation Updates
+
+#### **Complete Documentation Overhaul**
+- **API.md**: Updated with all new function signatures and parameters
+- **QUICKSTART.md**: Updated examples and quick reference table
+- **ENHANCED_HTML_TO_GUI.md**: New documentation for HTML5 and CSS3 features
+- **TROUBLESHOOTING.md**: Updated error codes for debug mode system
+- **JAVA_TO_LUA_TRANSPILER.md**: Updated function references
+
+#### **New Documentation Sections**
+- **HTML5 Support**: Comprehensive guide for semantic and media elements
+- **CSS3 Properties**: Complete reference for supported CSS properties
+- **Debug Mode**: Guide for using debug mode and error codes
+- **Migration Guide**: Step-by-step migration from old to new functions
+
+### 🐛 Bug Fixes
+
+#### **Critical Fixes**
+- **FIXED**: HTML parser infinite recursion with depth limiting (max 50 levels)
+- **FIXED**: CSS selector parsing with better error handling
+- **FIXED**: Attribute parsing for single quotes and boolean attributes
+- **FIXED**: Self-closing tag handling and malformed HTML recovery
+- **FIXED**: Memory leaks in nested HTML structure parsing
+
+#### **Function Integration Fixes**
+- **FIXED**: HTML function integration with enhanced parser
+- **FIXED**: Saveas function renaming and old function removal
+- **FIXED**: Debug mode implementation across all functions
+- **FIXED**: Error code consistency and TROUBLESHOOTING.md references
+
+### ⚠️ Breaking Changes
+
+#### **Function Signature Changes**
+- **OLD**: `manager.newsaveas(instance, path, moredebug, content)`
+- **NEW**: `manager.saveas(instance, path, debug, content)`
+- **NOTE**: Function renamed, debug parameter name changed
+
+#### **HTML Function Changes**
+- **OLD**: `manager.html(url, islocal, path, convertToGui, parentGui)`
+- **NEW**: Uses enhanced HTML parser with better CSS support
+- **NOTE**: Internal implementation completely rewritten
+
+#### **Debug Mode Changes**
+- **OLD**: Individual debug parameters per function
+- **NEW**: Global `_DEBUG_MODE` variable with error codes
+- **NOTE**: Debug mode now returns error codes from TROUBLESHOOTING.md
+
+### 🔄 Migration Guide
+
+#### **For HTML Function Users**
+```lua
+-- OLD WAY (still works but uses new parser internally)
+local result = manager.html(url, islocal, path, true, parentGui)
+
+-- NEW WAY (recommended - same function, enhanced parser)
+local result = manager.html(url, islocal, path, true, parentGui)
+-- Now supports HTML5 and CSS3 features
+```
+
+#### **For Saveas Function Users**
+```lua
+-- OLD WAY (deprecated)
+local result = manager.newsaveas("Sound", "path.mp3", true)
+
+-- NEW WAY (required)
+local result = manager.saveas("Sound", "path.mp3", true)
+-- Same functionality, new name
+```
+
+#### **For Debug Mode Users**
+```lua
+-- OLD WAY (individual debug parameters)
+local result = manager.newsaveas("Sound", "path.mp3", true)
+
+-- NEW WAY (global debug mode)
+manager._DEBUG_MODE = true
+local result = manager.saveas("Sound", "path.mp3", false)
+-- Debug mode controlled globally
+```
+
+### 🧪 Testing
+
+#### **New Test Coverage**
+- HTML5 semantic element parsing and conversion
+- CSS3 property parsing and Roblox property conversion
+- Media element handling (video, audio, sound)
+- Debug mode error code validation
+- Function renaming and integration testing
+
+#### **Enhanced Error Handling Testing**
+- Malformed HTML recovery testing
+- CSS parsing error handling
+- Debug mode error code consistency
+- Input validation and sanitization
+
+### 🔮 Future Plans (v2.1+)
+
+#### **Planned Features**
+- Advanced HTML5 form validation
+- CSS animations and transitions
+- WebGL/Canvas element support
+- Advanced media element controls
+- HTML5 data attribute support
+
+#### **Improvements**
+- Performance optimizations for large HTML documents
+- Enhanced CSS selector specificity
+- Advanced layout system improvements
+- Better cross-executor compatibility
+
+---
+
 ## [1.2.5] - 2 Oct 2025 *experimental saveas improvements and main library integration*
 
 ### 🚀 Major Integration Update

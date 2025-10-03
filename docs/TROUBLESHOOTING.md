@@ -1,5 +1,5 @@
 # 🔧 Troubleshooting Guide - Local Manager Library
-# remember, you won't get any error codes while using the library, e*rror codes coming soon*
+# ✅ Error codes now available in v2.0.0 with debug mode support
 
 Complete troubleshooting guide for resolving issues with the Local Manager Library.
 
@@ -87,7 +87,7 @@ end
 | `ERR_HTTP_INVALID_RESPONSE` | Invalid response from server | Server error, malformed response | Try different URL or check server status |
 | `ERR_HTTP_SAVE_FAILED` | Failed to save file | Disk space, permission issues | Check disk space and permissions |
 
-### HTML to GUI Error Codes
+### HTML to GUI Error Codes (v2.0.0 Enhanced)
 
 | Error Code | Description | Common Causes | Solution |
 |------------|-------------|---------------|----------|
@@ -99,7 +99,13 @@ end
 | `ERR_HTML_DOWNLOAD_FAILED` | Cannot find url, or it's offline | Network issues, invalid URL | Check internet and URL |
 | `ERR_HTML_EMPTY_RESPONSE` | Received empty response from server | Server returns empty content | Check server status and URL |
 | `ERR_HTML_NO_CONTENT` | No HTML content available | Empty response or file | Check source content |
-| `ERR_HTML_CONVERSION_FAILED` | Failed to convert HTML to GUI | HTML parsing error, GUI creation failed | Check HTML syntax and GUI permissions |
+| `ERR_HTML_CONVERSION_FAILED` | HTMLToGUI: Conversion failed - [error] | HTML parsing error, GUI creation failed | Check HTML syntax and GUI permissions |
+| `ERR_HTML_PARSING_FAILED` | HTMLToGUI: Failed to parse HTML - [error] | Malformed HTML, parsing depth exceeded | Check HTML structure and nesting |
+| `ERR_HTML_CSS_PARSING_FAILED` | HTMLToGUI: Failed to parse CSS - [error] | Invalid CSS syntax | Check CSS syntax and properties |
+| `ERR_HTML_GUI_CREATION_FAILED` | HTMLToGUI: Failed to create GUI instance - [error] | GUI creation failed | Check Roblox environment and permissions |
+| `ERR_HTML_ATTRIBUTE_PARSING_FAILED` | HTMLToGUI: Failed to parse attributes - [error] | Invalid HTML attributes | Check HTML attribute syntax |
+| `ERR_HTML_MEDIA_ELEMENT_FAILED` | HTMLToGUI: Failed to create media element - [error] | Media element creation failed | Check media file paths and formats |
+| `ERR_HTML_LAYOUT_SETUP_FAILED` | HTMLToGUI: Failed to setup layout - [error] | Layout system failure | Check CSS layout properties |
 
 ### Media Operations Error Codes
 
@@ -134,28 +140,43 @@ end
 |------------|-------------|---------------|----------|
 | `ERR_SAVEAS_DEPRECATED` | Try using the new saveas: manager.newsaveas | Using deprecated function | Use manager.newsaveas instead |
 
-#### New `manager.newsaveas()` Function
+#### Enhanced `manager.saveas()` Function (v2.0.0)
 
 | Error Code | Description | Common Causes | Solution |
 |------------|-------------|---------------|----------|
-| `ERR_NEWSAVEAS_INSTANCE_MISSING` | Cannot saveas, did you forget to add instance? | Missing instance parameter | Provide instance type (Sound, video, model, script) |
-| `ERR_NEWSAVEAS_INSTANCE_MISSING_DEBUG` | Cannot saveas, did you forget to add instance?. instance found: [instance] path found: [path] | Missing instance parameter (debug mode) | Provide instance type and check parameters |
-| `ERR_NEWSAVEAS_FILE_EXISTS` | Cannot saveas, file already exists at path | Target file already exists | Use different path or delete existing file |
-| `ERR_NEWSAVEAS_FILE_EXISTS_DEBUG` | Cannot saveas, file already exists at path: [path]data found[data] | Target file already exists (debug mode) | Use different path or delete existing file |
-| `ERR_NEWSAVEAS_CANNOT_OVERWRITE` | File already exists, cannot overwire file | Trying to overwrite existing file | Use different path or delete existing file |
-| `ERR_NEWSAVEAS_TYPE_NOT_IMPLEMENTED` | Cannot saveas, more coming soon![path],[debug] | Using unsupported instance type | Use supported types (currently only Sound) |
-| `ERR_NEWSAVEAS_WRITE_FAILED` | Failed to save file at path | File writing error | Check file permissions and disk space |
-| `ERR_NEWSAVEAS_WRITE_FAILED_DEBUG` | Failed to save file at path: [path]error: [error] | File writing error (debug mode) | Check file permissions, disk space, and error details |
+| `ERR_SAVEAS_INSTANCE_MISSING` | Cannot saveas, did you forget to add instance? | Missing instance parameter | Provide instance type (Sound, model, image, video, script) |
+| `ERR_SAVEAS_INSTANCE_MISSING_DEBUG` | Cannot saveas, missing parameters. instance: [instance] path: [path] | Missing instance parameter (debug mode) | Provide instance type and check parameters |
+| `ERR_SAVEAS_FILE_EXISTS` | Cannot saveas, file already exists at path | Target file already exists | Use different path or delete existing file |
+| `ERR_SAVEAS_FILE_EXISTS_DEBUG` | Cannot saveas, file already exists at path: [path] data found: [data] | Target file already exists (debug mode) | Use different path or delete existing file |
+| `ERR_SAVEAS_MODEL_INVALID` | Failed to save model: invalid model instance | Invalid model for saving | Ensure tobesaved is a Model instance |
+| `ERR_SAVEAS_MODEL_INVALID_DEBUG` | Failed to save model: tobesaved is not a Model instance. Type: [type] | Invalid model for saving (debug mode) | Check model type and ensure it's a Model |
+| `ERR_SAVEAS_MODEL_FORMAT_INVALID` | Failed to save model: invalid file format | Wrong file format for model | Use .rbxl or .rbxlx extension |
+| `ERR_SAVEAS_MODEL_FORMAT_INVALID_DEBUG` | Failed to save model: invalid path format. Expected .rbxl or .rbxlx, got: [path] | Wrong file format for model (debug mode) | Check file extension and format |
+| `ERR_SAVEAS_IMAGE_INVALID` | Failed to save image: invalid image instance | Invalid image for saving | Ensure tobesaved is ImageLabel, ImageButton, Decal, or Texture |
+| `ERR_SAVEAS_IMAGE_INVALID_DEBUG` | Failed to save image: tobesaved is not a valid image instance. Type: [type] | Invalid image for saving (debug mode) | Check image type and ensure it's valid |
+| `ERR_SAVEAS_IMAGE_FORMAT_INVALID` | Failed to save image: invalid file format | Wrong file format for image | Use .png, .jpg, .jpeg, .gif, .bmp, .tiff, or .ico |
+| `ERR_SAVEAS_IMAGE_FORMAT_INVALID_DEBUG` | Failed to save image: invalid file format. Expected: [formats], got: [path] | Wrong file format for image (debug mode) | Check file extension and supported formats |
+| `ERR_SAVEAS_SCRIPT_CONTENT_MISSING` | Script saving requires content parameter | Missing content for script | Provide script content as string |
+| `ERR_SAVEAS_SCRIPT_CONTENT_MISSING_DEBUG` | Script saving requires content parameter - use manager.saveas('script', path, debug, content) | Missing content for script (debug mode) | Provide script content parameter |
+| `ERR_SAVEAS_VIDEO_WIP` | 🚧 VIDEO SAVING - WORK IN PROGRESS! Coming soon! | Using video saving (not implemented) | Video saving is work in progress |
+| `ERR_SAVEAS_TYPE_UNSUPPORTED` | Unsupported instance type - Supported: Sound, script, model, image, video | Invalid instance type | Use supported instance types |
+| `ERR_SAVEAS_WRITE_FAILED` | Failed to save file at path | File writing error | Check file permissions and disk space |
+| `ERR_SAVEAS_WRITE_FAILED_DEBUG` | Failed to save file at path: [path] error: [error] | File writing error (debug mode) | Check file permissions, disk space, and error details |
 
-### Script Conversion Error Codes
+### Script Conversion Error Codes (v2.0.0 Enhanced)
 
 | Error Code | Description | Common Causes | Solution |
 |------------|-------------|---------------|----------|
 | `ERR_JAVATOLUA_SCRIPT_MISSING` | Cannot find script, did you forget to add script? | Missing script parameter | Provide Java code as string |
+| `ERR_JAVATOLUA_SCRIPT_MISSING_DEBUG` | Cannot find script, did you forget to add script?: [scripted] | Missing script parameter (debug mode) | Provide Java code as string |
 | `ERR_JAVATOLUA_EXECUTE_MISSING` | Cannot convert java to lua, did you forget to add doexecute parameter? | Missing doexecute parameter | Provide boolean value for execution |
+| `ERR_JAVATOLUA_EXECUTE_MISSING_DEBUG` | Cannot convert java to lua, did you forget to add doexecute parameter?: [doexecute] | Missing doexecute parameter (debug mode) | Provide boolean value for execution |
 | `ERR_JAVATOLUA_INVALID_SCRIPT` | Invalid script content, please provide a valid string | Invalid script content | Provide valid string with Java code |
+| `ERR_JAVATOLUA_INVALID_SCRIPT_DEBUG` | Invalid script content, please provide a valid string - content type: [type], length: [length] | Invalid script content (debug mode) | Provide valid string with Java code |
 | `ERR_JAVATOLUA_PROCESS_FAILED` | Failed to process script | Script processing error | Check Java code syntax and format |
+| `ERR_JAVATOLUA_PROCESS_FAILED_DEBUG` | Failed to process script: [error] - script length: [length] | Script processing error (debug mode) | Check Java code syntax and format |
 | `ERR_JAVATOLUA_EXECUTE_FAILED` | Failed to execute converted script | Script execution error | Check executor loadstring support |
+| `ERR_JAVATOLUA_EXECUTE_FAILED_DEBUG` | Failed to execute converted script: [error] - converted code: [code] | Script execution error (debug mode) | Check executor loadstring support and converted code |
 
 ### File Deletion Error Codes
 
@@ -170,6 +191,29 @@ end
 | `ERR_DFILE_BACKUP_FAILED` | Failed to create undo backup: [error] | Backup creation error | Check disk space and permissions |
 | `ERR_DFILE_DELETE_FAILED` | Failed to delete file: [error] | File deletion error | Check file permissions and locks |
 | `ERR_DFILE_RESTORE_FAILED` | Failed to restore file: [error] | File restoration error | Check write permissions |
+
+### Debug Mode Error Codes (v2.0.0)
+
+| Error Code | Description | Common Causes | Solution |
+|------------|-------------|---------------|----------|
+| `ERR_DEBUG_MODE_ENABLED` | Debug mode enabled - detailed error information available | Global debug mode activated | Review detailed error messages and error codes |
+| `ERR_DEBUG_ERROR_CODE_REFERENCE` | Error code: [code] - see TROUBLESHOOTING.md for details | Debug mode provides error codes | Reference TROUBLESHOOTING.md for specific error code solutions |
+| `ERR_DEBUG_PARAMETER_VALIDATION` | Parameter validation failed - [parameter]: [value] | Invalid parameter provided | Check parameter types and values |
+| `ERR_DEBUG_FUNCTION_CONTEXT` | Function context: [function] - [context] | Function execution context error | Review function usage and parameters |
+| `ERR_DEBUG_SYSTEM_STATE` | System state: [state] - [details] | System state validation failed | Check system capabilities and environment |
+
+**Debug Mode Usage:**
+```lua
+-- Enable global debug mode
+manager._DEBUG_MODE = true
+
+-- All functions will now return detailed error codes and information
+local result = manager.saveas("model", "test.rbxl", false, myModel)
+-- Returns detailed error information if something goes wrong
+
+-- Disable debug mode
+manager._DEBUG_MODE = false
+```
 
 ---
 
