@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Java to Lua Transpiler Server</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card h2 {
+            color: #4a5568;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .form-group textarea {
+            width: 100%;
+            min-height: 200px;
+            padding: 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            resize: vertical;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-group input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            border: 2px dashed #e2e8f0;
+            border-radius: 8px;
+            background: #f7fafc;
+            cursor: pointer;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            transform: scale(1.2);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .output {
+            background: #1a202c;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #4a5568;
+        }
+
+        .status {
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .status.success {
+            background: #c6f6d5;
+            color: #22543d;
+            border: 1px solid #9ae6b4;
+        }
+
+        .status.error {
+            background: #fed7d7;
+            color: #742a2a;
+            border: 1px solid #feb2b2;
+        }
+
+        .status.info {
+            background: #bee3f8;
+            color: #2a4365;
+            border: 1px solid #90cdf4;
+        }
+
+        .examples {
+            grid-column: 1 / -1;
+        }
+
+        .example-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .example-card {
+            background: #f7fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .example-card:hover {
+            background: #edf2f7;
+            border-color: #667eea;
+        }
+
+        .example-card h3 {
+            color: #2d3748;
+            margin-bottom: 10px;
+        }
+
+        .example-card p {
+            color: #4a5568;
+            font-size: 14px;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .footer {
+            text-align: center;
+            color: white;
+            margin-top: 40px;
+            opacity: 0.8;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Java to Lua Transpiler</h1>
+            <p>Convert your Java code to Lua/Luau with ease - No npm required!</p>
+        </div>
+
+        <div class="main-content">
+            <!-- Code Conversion Card -->
+            <div class="card">
+                <h2>📝 Convert Java Code</h2>
+                <form id="convertForm">
+                    <div class="form-group">
+                        <label for="javaCode">Java Code:</label>
+                        <textarea id="javaCode" placeholder="Paste your Java code here...&#10;&#10;Example:&#10;public class HelloWorld {&#10;    public static void main(String[] args) {&#10;        System.out.println(&quot;Hello, World!&quot;);&#10;    }&#10;}"></textarea>
+                    </div>
+                    
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="debugMode" checked>
+                        <label for="debugMode">Enable Debug Mode</label>
+                    </div>
+                    
+                    <button type="submit" class="btn" id="convertBtn">🔄 Convert to Lua</button>
+                </form>
+                
+                <div id="convertStatus"></div>
+                <div id="convertLoading" class="loading">
+                    <div class="spinner"></div>
+                    <p>Converting your Java code...</p>
+                </div>
+                <div id="convertOutput" class="output" style="display: none;"></div>
+            </div>
+
+            <!-- File Upload Card -->
+            <div class="card">
+                <h2>📁 Upload Java File</h2>
+                <form id="uploadForm">
+                    <div class="form-group">
+                        <label for="javaFile">Select Java File:</label>
+                        <input type="file" id="javaFile" accept=".java" required>
+                    </div>
+                    
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="fileDebugMode" checked>
+                        <label for="fileDebugMode">Enable Debug Mode</label>
+                    </div>
+                    
+                    <button type="submit" class="btn" id="uploadBtn">📤 Upload & Convert</button>
+                </form>
+                
+                <div id="uploadStatus"></div>
+                <div id="uploadLoading" class="loading">
+                    <div class="spinner"></div>
+                    <p>Processing your file...</p>
+                </div>
+                <div id="uploadOutput" class="output" style="display: none;"></div>
+            </div>
+
+            <!-- Examples Card -->
+            <div class="card examples">
+                <h2>📚 Example Java Files</h2>
+                <p>Click on any example to load it into the converter:</p>
+                
+                <div class="example-grid" id="examplesGrid">
+                    <!-- Examples will be loaded here -->
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Java to Lua Transpiler Server v1.0.0 | Made with ❤️ for the Lua community</p>
+        </div>
+    </div>
+
+    <script>
+        // Server configuration
+        const SERVER_URL = 'http://localhost:8080';
+        const API_URL = SERVER_URL + '/api/v1';
+
+        // DOM elements
+        const convertForm = document.getElementById('convertForm');
+        const uploadForm = document.getElementById('uploadForm');
+        const javaCodeTextarea = document.getElementById('javaCode');
+        const javaFileInput = document.getElementById('javaFile');
+        const examplesGrid = document.getElementById('examplesGrid');
+
+        // Status and output elements
+        const convertStatus = document.getElementById('convertStatus');
+        const convertLoading = document.getElementById('convertLoading');
+        const convertOutput = document.getElementById('convertOutput');
+        const uploadStatus = document.getElementById('uploadStatus');
+        const uploadLoading = document.getElementById('uploadLoading');
+        const uploadOutput = document.getElementById('uploadOutput');
+
+        // Utility functions
+        function showStatus(element, message, type = 'info') {
+            element.innerHTML = `<div class="status ${type}">${message}</div>`;
+            element.style.display = 'block';
+        }
+
+        function hideStatus(element) {
+            element.style.display = 'none';
+        }
+
+        function showLoading(element) {
+            element.style.display = 'block';
+        }
+
+        function hideLoading(element) {
+            element.style.display = 'none';
+        }
+
+        function showOutput(element, content) {
+            element.textContent = content;
+            element.style.display = 'block';
+        }
+
+        function hideOutput(element) {
+            element.style.display = 'none';
+        }
+
+        // API functions
+        async function convertJavaCode(javaCode, debug = false) {
+            try {
+                const response = await fetch(`${API_URL}/convert`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        javaCode: javaCode,
+                        debug: debug
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    return { success: true, data: data };
+                } else {
+                    return { success: false, error: data.message || 'Conversion failed' };
+                }
+            } catch (error) {
+                return { success: false, error: 'Network error: ' + error.message };
+            }
+        }
+
+        async function convertJavaFile(file, debug = false) {
+            try {
+                // First upload the file
+                const formData = new FormData();
+                formData.append('file', file);
+
+                const uploadResponse = await fetch(`${SERVER_URL}/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!uploadResponse.ok) {
+                    throw new Error('File upload failed');
+                }
+
+                // Then convert it
+                const response = await fetch(`${API_URL}/convert-file`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        filename: file.name,
+                        debug: debug
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    return { success: true, data: data };
+                } else {
+                    return { success: false, error: data.message || 'File conversion failed' };
+                }
+            } catch (error) {
+                return { success: false, error: 'Network error: ' + error.message };
+            }
+        }
+
+        async function loadExample(exampleId) {
+            try {
+                const response = await fetch(`${API_URL}/examples/${exampleId}`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    javaCodeTextarea.value = data.content;
+                    showStatus(convertStatus, `✅ Loaded example: ${data.metadata.name}`, 'success');
+                } else {
+                    showStatus(convertStatus, `❌ Failed to load example: ${data.message}`, 'error');
+                }
+            } catch (error) {
+                showStatus(convertStatus, `❌ Error loading example: ${error.message}`, 'error');
+            }
+        }
+
+        async function loadExamples() {
+            try {
+                const response = await fetch(`${API_URL}/examples`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    examplesGrid.innerHTML = '';
+                    data.examples.forEach(example => {
+                        const exampleCard = document.createElement('div');
+                        exampleCard.className = 'example-card';
+                        exampleCard.innerHTML = `
+                            <h3>${example.name}</h3>
+                            <p>${example.description}</p>
+                            <p><strong>Difficulty:</strong> ${example.difficulty} | <strong>Size:</strong> ${example.size}</p>
+                        `;
+                        exampleCard.onclick = () => loadExample(example.id);
+                        examplesGrid.appendChild(exampleCard);
+                    });
+                }
+            } catch (error) {
+                console.error('Failed to load examples:', error);
+            }
+        }
+
+        // Event listeners
+        convertForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const javaCode = javaCodeTextarea.value.trim();
+            const debug = document.getElementById('debugMode').checked;
+            
+            if (!javaCode) {
+                showStatus(convertStatus, '❌ Please enter some Java code to convert', 'error');
+                return;
+            }
+
+            hideStatus(convertStatus);
+            hideOutput(convertOutput);
+            showLoading(convertLoading);
+
+            const result = await convertJavaCode(javaCode, debug);
+            
+            hideLoading(convertLoading);
+
+            if (result.success) {
+                showStatus(convertStatus, '✅ Conversion completed successfully!', 'success');
+                showOutput(convertOutput, result.data.result.luaCode);
+            } else {
+                showStatus(convertStatus, `❌ ${result.error}`, 'error');
+            }
+        });
+
+        uploadForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const file = javaFileInput.files[0];
+            const debug = document.getElementById('fileDebugMode').checked;
+            
+            if (!file) {
+                showStatus(uploadStatus, '❌ Please select a Java file to upload', 'error');
+                return;
+            }
+
+            hideStatus(uploadStatus);
+            hideOutput(uploadOutput);
+            showLoading(uploadLoading);
+
+            const result = await convertJavaFile(file, debug);
+            
+            hideLoading(uploadLoading);
+
+            if (result.success) {
+                showStatus(uploadStatus, `✅ File converted successfully! Download: ${result.data.result.convertedFile}`, 'success');
+                showOutput(uploadOutput, `Download URL: ${result.data.result.downloadUrl}`);
+            } else {
+                showStatus(uploadStatus, `❌ ${result.error}`, 'error');
+            }
+        });
+
+        // Load examples on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            loadExamples();
+        });
+    </script>
+</body>
+</html>
