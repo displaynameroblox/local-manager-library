@@ -335,9 +335,14 @@ end
 
 -- we are gonna make the more complx code first and then we make the esay ones
 
--- the media function should be done my tomorrow!
+-- the media function should be done by tomorrow!
 function media(filetype, _type, media)
     local mediaid = nil
+    
+    if filetype then
+        print("this is very early version of the script. files types are for file meta data. this feature isn't supported yet!, WIP")
+        return filetype, media
+    end
     if not media then
         return "cannot load media data, did you forget to add media?"
     end
@@ -350,20 +355,49 @@ function media(filetype, _type, media)
         return "cannot load media data, did you forget to add type?"
     end
     if _type == "video" then
-        return "Videos isn't supported yet!. WIP"
+        print("keep in mind, this is indev, and might not work!")
+
+        local video = Instance.new("VideoFrame") -- not quite sure how to do this
+
+        video.Parent = workspace
+        video.Video = mediaid -- this how you do it right??
+
+        -- we make a check for the video frame
+        if video and video.IsLoaded then
+            local success1 = pcall(function()
+                video:Play()
+                video.Volume = 0
+            end)
+            if success1 then
+                if video and video.isPlaying and video.Played then
+                    video:Pause()
+                    video.Volume = 0.5
+                    return video
+                else
+                    return "faild to load video, try again"
+                end
+            else
+                return "faild to load video, try again"
+            end
+        end
     elseif _type == "Document" then
         return "Documents isn't supported yet!. WIP"
-    elseif _type == "audio" then
+    
+        elseif _type == "audio" then
         print("keep in mind, this is indev, and might now work!")
+
         local sound = Instance.new("Sound", workspace)
+
         sound.Volume = 0.5
         sound.SoundId = mediaid
+
         -- we make a check for the sound
         if sound.IsLoaded and sound then
             local success = pcall(function()
                 sound.Volume = 0
                 sound:Play()
             end)
+
             if sound.Playing and sound.Played then
                 sound:Stop()
                 sound.Volume = 0.5
