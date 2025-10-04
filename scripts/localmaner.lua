@@ -1723,4 +1723,3 @@ function manager.javatolua(scripted, doexecute)
 end
 
 return manager
-
