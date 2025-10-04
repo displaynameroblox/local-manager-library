@@ -354,7 +354,26 @@ function media(filetype, _type, media)
     elseif _type == "Document" then
         return "Documents isn't supported yet!. WIP"
     elseif _type == "audio" then
-        return "Audios isn't supported yet!. WIP"
+        print("keep in mind, this is indev, and might now work!")
+        local sound = Instance.new("Sound", workspace)
+        sound.Volume = 0.5
+        sound.SoundId = mediaid
+        -- we make a check for the sound
+        if sound.IsLoaded and sound then
+            local success = pcall(function()
+                sound.Volume = 0
+                sound:Play()
+            end)
+            if sound.Playing and sound.Played then
+                sound:Stop()
+                sound.Volume = 0.5
+                return sound
+            elseif not sound.Playing and not sound.Played then
+                sound:Stop()
+                sound:Destroy()
+               return "faild while checking sound, try again"
+            end
+        end
     end
 end
 
