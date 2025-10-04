@@ -332,4 +332,30 @@ function manager.nodefecth(debugMode)
     
     return systemInfo
 end
+
+-- we are gonna make the more complx code first and then we make the esay ones
+
+-- the media function should be done my tomorrow!
+function media(filetype, _type, media)
+    local mediaid = nil
+    if not media then
+        return "cannot load media data, did you forget to add media?"
+    end
+    if filetype == "local" then
+        local tobeadded = getcustomasset(media)
+        mediaid = tobeadded
+    elseif filetype == "roblox" then
+        mediaid = media
+    else
+        return "cannot load media data, did you forget to add type?"
+    end
+    if _type == "video" then
+        return "Videos isn't supported yet!. WIP"
+    elseif _type == "Document" then
+        return "Documents isn't supported yet!. WIP"
+    elseif _type == "audio" then
+        return "Audios isn't supported yet!. WIP"
+    end
+end
+
 return manager
